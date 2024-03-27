@@ -1,0 +1,115 @@
+<!-- 2024-02-22-01 -->
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui">
+    <ribbon>
+        <tabs>
+            <tab id="AIToolsTab" label="AI Tools">
+                <group id="AITextGroup" label="Text Tools">
+                    <button id="CorrectToStandardEnglishButton"
+                            label="Spelling (standard)"
+                            imageMso="Spelling"
+                            screentip="Correct selected text to standard English"
+                            supertip="Correct the grammar of the selected text and convert it to standard English. The revised variant will replace the original (selected) text."
+                            size="large"
+                            onAction="CorrectToStandardEnglishButtonCallback" />
+                    <button id="CorrectToStandardEnglishBusinessButton"
+                            label="Spelling (business)"
+                            imageMso="Spelling"
+                            screentip="Correct selected text to standard English in the business style"
+                            supertip="Correct the grammar of the selected text and convert it to standard English in the business style. The revised variant will replace the original (selected) text."
+                            size="large"
+                            onAction="CorrectToStandardEnglishBusinessButtonCallback" />
+                    <button id="ParaphraseShortenButton"
+                            label="Shorten (paraphrase)"
+                            imageMso="ParagraphSpacingDecrease"
+                            screentip="Paraphrase selected text to make it slightly shorter"
+                            supertip="Paraphrase the selected text to make it shorter, but preserve its meaning. The revised variant will replace the original (selected) text."
+                            size="large"
+                            onAction="ParaphraseShortenButtonCallback" />
+                </group>
+
+                <group id="AITitlesGroup" label="Title Tools">
+                    <button id="RephraseConsultingMultiShotButton"
+                            label="Rephrase Title (multi-shot)"
+                            imageMso="ControlWizards"
+                            screentip="Improve the style of selected title (with samples)"
+                            supertip="Rewrite the selected text which is expected to be a slide title using a more bold, catchy, and impactful wording peculiar to management consulting. The result will replace the selected text. The result is different every time, so don't hesitate to use Ctrl+Z and redo if you don't like the result."
+                            size="large"
+                            onAction="RephraseConsultingMultiShotButtonCallback" />
+                    <button id="RephraseConsultingZeroShotButton"
+                            label="Rephrase Title (zero-shot)"
+                            imageMso="ControlWizards"
+                            screentip="Improve the style of selected title (without samples)"
+                            supertip="Rewrite the selected text which is expected to be a slide title using a more bold, catchy, and impactful wording peculiar to management consulting. The result will replace the selected text. The result is different every time, so don't hesitate to use Ctrl+Z and redo if you don't like the result."
+                            size="large"
+                            onAction="RephraseConsultingZeroShotButtonCallback" />
+                    <button id="RephraseTitleVariantsButton"
+                            label="Beautify Title"
+                            imageMso="AllCategories"
+                            screentip="Suggest several options how to beautify a title"
+                            supertip="Show a windows with several options of a beautified title. You can select the best option, change the text and replace the selected text with the improved one. Might take a while (1-2 min) to execute."
+                            size="large"
+                            onAction="RephraseTitleVariantsButtonCallback" />
+                </group>
+
+                <group id="AIEmailGroup" label="Email Tools">
+                    <button id="RephrasePoliteConciseButton"
+                            label="Rephrase Polite and Concise"
+                            imageMso="ShapeSmileyFace"
+                            screentip="improve the selected text (email or message)"
+                            supertip="Rewrite the selected message in order to make it more indirect, polite, delicate, and considerate. Keep it concise and to the point, and make it suitable for communication with executive-level management. Ensure that the cultural sensibilities and professional etiquettes common in Arabic and European contexts are considered, maintaining the original message's intent. The result will replace the selected text."
+                            size="large"
+                            onAction="RephrasePoliteConciseButtonCallback" />
+                    <button id="RephrasePoliteExtraButton"
+                            label="Rephrase Polite"
+                            imageMso="ShapeSmileyFace"
+                            screentip="improve the selected text (email or message)"
+                            supertip="Rewrite the selected message in order to make it more indirect, polite, delicate, and considerate. Emphasize readiness to collaborate and showing respect for the recipient's time and efforts if suitable. Ensure that the cultural sensibilities and professional etiquettes common in Arabic and European contexts are considered, maintaining the original message's intent. The result will replace the selected text."
+                            size="large"
+                            onAction="RephrasePoliteExtraButtonCallback" />
+                </group>
+
+                <group id="AIPlaygroundGroup" label="Playground">
+                    <button id="RunAIButton"
+                            label="Run AI"
+                            imageMso="MacroPlay"
+                            screentip="Execute query on the AI Playground"
+                            supertip="Execute a large language model request with the command entered on the active AI Playground slide. The command works only on the slides designed for it."
+                            size="large"
+                            onAction="RunAIButtonCallback" />
+                </group>
+
+                <group id="AISettingsGroup" label="Settings">
+                    <dropDown id="AIDefaultModelDropdown"
+                              label="Model:"
+                              screentip="Select default LLM model"
+                              supertip="Select default LLM model for the 'chat' endpoint."
+                              getSelectedItemID="AIDefaultModelGetSelectedItemID"
+                              onAction="AIDefaultModelDropdownCallback">
+                        <item id="chatgpt"
+                              label="ChatGPT"/>
+                        <item id="claude"
+                              label="Claude"/>
+                        <item id="gemini"
+                              label="Gemini"/>
+                        <item id="mistral"
+                              label="Mistral"/>
+                    </dropDown>
+                    <checkBox id="EnforceRnQComplianceCheckbox" 
+                              label="Enforce compliance"
+                              screentip="Enforce Risk compliance"
+                              supertip="Disable actions that can potentially violate PwC Risk policies regarding the usage of external services."
+                              enabled="false"
+                              onAction="EnforceRnQComplianceCheckboxOnActionCallback"
+                              getPressed="EnforceRnQComplianceCheckboxGetPressedCallback"/>
+                    <button id="SettingsButton"
+                            label="Settings"
+                            imageMso="ComAddInsDialog"
+                            screentip="Open settings window"
+                            supertip="Set up API Keys for external service providers (OpenAI, OpenRouter)."
+                            size="normal"
+                            onAction="SettingsButtonCallback" />
+                </group>
+            </tab>
+        </tabs>
+    </ribbon>
+</customUI>
