@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-03-07+1
+' Version 2024-04-11+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -54,7 +54,7 @@ End Function
 
 Private Function GetProvider(Optional model As String) As String
     Dim provider As String
-                             
+
     If IsEmpty(model) Or model = "" Then
         provider = "openrouter"
     ElseIf model = "chatgpt" Or StartsWith(model, "gpt-") Then
@@ -65,17 +65,19 @@ Private Function GetProvider(Optional model As String) As String
         provider = "google"
     ElseIf model = "mistral" Or StartsWith(model, "mistral-") Then
         provider = "mistralai"
+    ElseIf model = "command-r" Or model = "command-r-plus" Then
+        provider = "cohere"
     Else
         provider = "openrouter"
     End If
-    
+
     If provider <> "openrouter" And GetAPIKey(provider, safe:=True) = "" Then
 #If DeveloperMode Then
         Debug.Print "No API key for '" & provider & "'; fallback to 'openrouter'"
 #End If
         provider = "openrouter"
     End If
-    
+
     GetProvider = provider
 End Function
 
@@ -85,13 +87,13 @@ Private Function GetModelName(model As String, _
     ' https://platform.openai.com/docs/models
     If provider = "openai" Then
         If model = "gpt-4" Or model = "gpt-4-turbo" Or model = "chatgpt" Then
-            GetModelName = "gpt-4-turbo-preview"
+            GetModelName = "gpt-4-turbo"
         ElseIf model = "gpt-3" Or model = "gpt-3.5" Then
             GetModelName = "gpt-3.5-turbo-instruct"
         Else
             Err.Raise vbObjectError + 1001, , "Wrong model"
         End If
-    
+
     ' https://docs.mistral.ai/platform/endpoints/
     ElseIf provider = "mistralai" Then
         If model = "mistral" Then
@@ -103,7 +105,7 @@ Private Function GetModelName(model As String, _
         Else
             Err.Raise vbObjectError + 1001, , "Wrong model"
         End If
-    
+
     ' https://console.anthropic.com/
     ElseIf provider = "anthropic" Then
         If model = "claude" Or model = "claude-3" Then
@@ -111,36 +113,39 @@ Private Function GetModelName(model As String, _
         Else
             Err.Raise vbObjectError + 1001, , "Wrong model"
         End If
-    
+
     ' https://openrouter.ai/docs#models
     ElseIf provider = "openrouter" Then
         ' OpenAI
         If model = "chatgpt" Or StartsWith(model, "gpt-") Then
             GetModelName = "openai/gpt-4-turbo-preview"
-        
+
         ' Anthropic
         ElseIf model = "claude" Or model = "claude-3" Or model = "claude-3-opus" Then
             GetModelName = "anthropic/claude-3-opus"
         ElseIf model = "claude-2" Then
             GetModelName = "anthropic/claude-2"
-        
+
         ' Google
         ElseIf model = "gemini" Or model = "gemini-pro" Or model = "gemini-1.0-pro" _
                 Or model = "gemini-pro-latest" Then
             GetModelName = "google/gemini-pro"
         ElseIf StartsWith(model, "gemini-") Then
             GetModelName = "google/" & model
-        
+
         ' Mistral
         ElseIf model = "mistral" Then
             GetModelName = "mistralai/mistral-large"
         ElseIf StartsWith(model, "mistral-") Then
             GetModelName = "mistralai/" & model
-        
+
+        ' Command R/R+
+        ElseIf model = "command-r" Or model = "command-r-plus" Then
+            GetModelName = "cohere/" & model
         Else
             Err.Raise vbObjectError + 1001, , "Wrong model"
         End If
-    
+
     ' https://ai.google.dev/models/gemini
     ElseIf provider = "google" Then
         If model = "gemini" Or model = "gemini-pro" Then
@@ -150,10 +155,18 @@ Private Function GetModelName(model As String, _
         Else
             Err.Raise vbObjectError + 1001, , "Wrong model"
         End If
-        
+
+    ' https://docs.cohere.com/docs/models
+    ElseIf provider = "cohere" Then
+        If model = "command-r" Or model = "command-r-plus" Then
+            GetModelName = model
+        Else
+            Err.Raise vbObjectError + 1001, , "Wrong model"
+        End If
+
     Else
         Err.Raise vbObjectError + 1001, , "Wrong provider"
-    
+
     End If
 End Function
 
@@ -161,20 +174,20 @@ End Function
 Private Function GetBaseURL(provider As String) As String
     If provider = "openai" Then
         GetBaseURL = "https://api.openai.com/v1/chat/completions"
-        
+
     ElseIf provider = "openrouter" Then
         GetBaseURL = "https://openrouter.ai/api/v1/chat/completions"
-        
+
     ElseIf provider = "mistralai" Then
         GetBaseURL = "https://api.mistral.ai/v1/chat/completions"
-        
+
     Else
         Err.Raise vbObjectError + 1001, , "Wrong provider"
     End If
 End Function
 
-Private Function GetDefaultChatguidelines() As String
-    GetDefaultChatguidelines = _
+Private Function GetDefaultPreamble() As String
+    GetDefaultPreamble = _
         ("You are an AI-driven Microsoft Office add-in, which helps management consultants to prepare business presentations " & _
          "and documents. A user will provide you with a command or ask you a question. Please respond in the most precise way you " & _
          "can without further clarifications of the input. Be concise and to the point. Do not make up facts. Follow the " & _
@@ -288,7 +301,7 @@ Sub RephraseConsultingMultiShot()
     s = s + "# Your task:" & vbLf & vbLf
     s = s + "SOURCE: """"""{{input}}""""""" & vbLf & vbLf
     s = s + "Do not repeat the source text, write only the rephrased extract starting with ""RESULT:""."
-    
+
     TransformSelection command:=s, _
                        temperature:=0.5, _
                        remove_prefix:="RESULT:"
@@ -349,7 +362,7 @@ Sub RunAI()
     Dim i As Integer
     Dim slide_tagged As Boolean
     slide_tagged = False
-    
+
     With ActiveWindow.View.Slide
         For i = 1 To .Tags.Count
             If .Tags.Name(i) = "RUNAIPLAYGROUND" Then
@@ -357,13 +370,13 @@ Sub RunAI()
                 Exit For
             End If
         Next i
-    
+
         If Not slide_tagged Then
             MsgBox ("Cannot run AI on this slide. The command works only on " + _
                     "the playground slide and its copies."), vbCritical, "AI Tools: Error"
             Exit Sub
         End If
-    
+
         command = GetText(.Shapes("_command_"))
         source = GetText(.Shapes("_source_"))
         temperature = CDbl(GetText(.Shapes("_temperature_"))) / 100
@@ -374,11 +387,11 @@ Sub RunAI()
     result = LLMTextCommand(command:=command, _
                             source:=source, _
                             temperature:=temperature)
-    
+
     If StartsWith(result, """""""") And EndsWith(result, """""""") Then
         result = RemoveSuffix(RemovePrefix(result, """"""""), """""""")
     End If
-    
+
     resultShape.TextFrame.TextRange.text = result
 End Sub
 
@@ -409,7 +422,7 @@ Sub RephraseTitleVariants()
     ' Dim ts As Single
     Dim text As String
     Dim i As Long
-    
+
 #If IsWord Then
     Dim d As Scripting.Dictionary
 #Else
@@ -450,13 +463,13 @@ Sub RephraseTitleVariants()
     source = tr.text
 
 Begin:  ' ##################
-    
+
     AIToolsWait.Show
     DoEvents
-    
+
     token = "502f3434-1d27-4161-a703-b015f5ae787d"
     base_url = "https://ensemble-58c17250eaa2.herokuapp.com"
-    
+
 #If IsWord Then
     Set d = New Scripting.Dictionary
 #Else
@@ -464,22 +477,22 @@ Begin:  ' ##################
 #End If
 
     d.Add "text", source
-    
+
     request = ConvertToJson(d)
-    
+
     Set http = New WinHttpRequest
-    
+
     timeout = 10000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
-    
+
     url = base_url & "/api/v1/ensemble/rephrase_title/create"
-    
+
 #If DeveloperMode Then
     Debug.Print ">>>>>>>>>>>>"
     Debug.Print "URL:", url
     Debug.Print "Request:", request
 #End If
-    
+
     http.Open "POST", url
     http.SetRequestHeader "Authorization", "Bearer " & token
     http.SetRequestHeader "Content-Type", "application/json"
@@ -489,51 +502,51 @@ Begin:  ' ##################
 #End If
     http.Send request
     On Error GoTo 0
-    
+
     response_str = http.ResponseText
     response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
-    
+
 #If DeveloperMode Then
     Debug.Print "Response:", response_str
     Debug.Print "<<<<<<<<<<<<"
 #End If
-    
+
     Set response_json = ParseJson(response_str)
-    
+
     task_id = response_json("task_id")
-    
+
     url = base_url & "/api/v1/ensemble/rephrase_title/retrieve?task_id=" & task_id
-    
+
     status = ""
-    
+
     timeout_counter = 300
-    
+
     Do While status <> "completed"
         ' Variant 1
         ' Freezes the application
         'Sleep 1000  ' 1 sec
-        
+
         ' Variant 2
         ' Loads CPU heavily
         'ts = Timer()
         'Do While Timer() <= ts + 1
         '    DoEvents
         'Loop
-    
+
         ' Variant 3
         ' Not available in PowerPoint
         'DoEvents
         'Application.Wait (Now + TimeValue("0:00:01"))
-    
+
         ' Variant 4
         ' Best options so far
         UnblockingWait 1
-    
+
 #If DeveloperMode Then
         Debug.Print ">>>>>>>>>>>>"
         Debug.Print "URL:", url
 #End If
-        
+
         http.Open "GET", url
         http.SetRequestHeader "Authorization", "Bearer " & token
         http.SetRequestHeader "Content-Type", "application/json"
@@ -543,54 +556,54 @@ Begin:  ' ##################
 #End If
         http.Send
         On Error GoTo 0
-        
+
         response_str = http.ResponseText
         response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
-        
+
 #If DeveloperMode Then
         Debug.Print "Response:", response_str
         Debug.Print "<<<<<<<<<<<<"
 #End If
-        
+
         Set response_json = ParseJson(response_str)
-        
+
         status = response_json("status")
-        
+
         If status = "error" Then
             Err.Raise vbObjectError + 1001, , _
                 "API Error: " & response_json("error") & ". Press 'End' and try again."
         End If
-        
+
         If status <> "created" And status <> "in_progress" _
                 And status <> "completed" Then
             Err.Raise vbObjectError + 1001, , _
                 "API Error: Unknown status '" & status & "'. Press 'End' and try again."
         End If
-        
+
         timeout_counter = timeout_counter - 1
-        
+
         If timeout_counter = 0 Then
             Err.Raise vbObjectError + 1001, , _
                 "Error: Timeout. Press 'End' and try again."
         End If
     Loop
-    
+
     Do While AIToolsWait.Visible
         AIToolsWait.Hide
         DoEvents
     Loop
-    
+
     text = "Orig: " + source + vbCr + vbCr
-    
+
     For i = 1 To response_json("result")("output").Count
         text = text + response_json("result")("output")(i)
         text = text + vbCr
         text = text + "By: " + response_json("result")("model")(i)
         text = text + vbCr + vbCr + vbCr
     Next i
-    
+
     text = Trim_(text)
-    
+
     With AIToolsOutput
         .Tag = ""
         .TextBoxOutput.text = text
@@ -600,18 +613,18 @@ Begin:  ' ##################
         result = .Tag
         On Error GoTo 0
     End With
-    
+
     If Not IsEmpty(result) And result <> "" Then
         tr.text = result
     End If
-    
+
     Exit Sub
-    
+
 HTTPErrorHandler:
     error_text = Err.Description
 
     On Error GoTo 0
-    
+
 #If DeveloperMode Then
     Debug.Print "HTTP Error:", error_text
     Debug.Print "<<<<<<<<<<<<"
@@ -620,11 +633,11 @@ HTTPErrorHandler:
     Do While AIToolsWait.Visible
         AIToolsWait.Hide
     Loop
-    
+
     If IsEmpty(error_text) Or error_text = "" Then
         error_text = "Unknown"
     End If
-    
+
     Err.Raise vbObjectError + 1001, , _
         "HTTP Error: " & error_text & ". Press 'End' and try again."
 End Sub
@@ -667,7 +680,7 @@ Function AI(mode As Integer, _
     If AI_Cache Is Nothing Then
         Set AI_Cache = New Dictionary
     End If
-    
+
     guidance = _
         ("You are a VBA User Defined Function (UDF) in Excel. " & _
          "A user will provide you an input table with a request, a command or a question. " & _
@@ -676,7 +689,7 @@ Function AI(mode As Integer, _
          "Your response should be formated as a table: each line is a table row, and columns " & _
          "should be split by a vertical bar (|). Do not repeat user's input. " & _
          "Use business language whenever possible unless otherwise stated." & vbLf & vbLf)
-               
+
     If mode = 1 Then
         guidance = guidance & _
                   ("You should add new rows to the table. Please follow the pattern provided by the user " & _
@@ -694,9 +707,9 @@ Function AI(mode As Integer, _
                    "|Evan Lysacek|2010|United States|" & vbLf & _
                    "|Evgeni Plushenko|2006|Russia|" & vbLf & _
                    "|Alexei Yagudin|2002|Russia|")
-    
+
         guidance = guidance & vbLf & vbLf & vbLf
-    
+
         guidance = guidance & _
                   ("Example 2" & vbLf & _
                    "---------" & vbLf & vbLf & _
@@ -761,78 +774,78 @@ Function AI(mode As Integer, _
         Err.Raise vbObjectError + 1001, , "Invalid mode: " & CStr(mode) & ". Should be 1 or 2."
 
     End If
-    
+
     cached = False
-    
+
     If AI_Cache.Exists(command) Then
         cached = True
     End If
-    
+
     If Not cached Then
         result = TransformText(source:="", _
                                command:=command, _
-                               guidelines:=guidance, _
+                               preamble:=guidance, _
                                temperature:=0, _
                                correct_punctuation:=False, _
                                extract_tripple_quotes:=False)
-        
+
         result = Trim_(result)
         result = Replace(result, vbCr, "")
-    
+
         AI_Cache.Add command, result
-    
+
     Else
         result = AI_Cache(command)
-        
+
     End If
-    
+
     result_rows = Split(result, vbLf)
-    
+
     cclb = 0
     ccub = 0
-    
+
     For i = LBound(result_rows) To UBound(result_rows)
         s = result_rows(i)
-        
+
         If Left(s, 1) = "|" Then
             s = Right(s, Len(s) - 1)
         End If
-        
+
         If Right(s, 1) = "|" Then
             s = Left(s, Len(s) - 1)
         End If
-        
+
         s = Trim_(s)
-    
+
         a = Split(s, "|")
-        
+
         If LBound(a) < cclb Then
             cclb = LBound(a)
         End If
-        
+
         If UBound(a) > ccub Then
             ccub = UBound(a)
         End If
     Next i
-    
+
     ReDim out_arr(LBound(result_rows) To UBound(result_rows), _
                   cclb To ccub)
 
     For i = LBound(result_rows) To UBound(result_rows)
         s = result_rows(i)
-        
+
         If Left(s, 1) = "|" Then
             s = Right(s, Len(s) - 1)
         End If
-        
+
         If Right(s, 1) = "|" Then
             s = Left(s, Len(s) - 1)
         End If
-        
+
         s = Trim_(s)
-        
+
         a = Split(s, "|")
-        
+
         For j = LBound(a) To UBound(a)
             out_arr(i, j) = Trim_(a(j))
         Next j
@@ -845,7 +858,7 @@ Sub AIClearCache()
     If AI_Cache Is Nothing Then
         Set AI_Cache = New Dictionary
     End If
-    
+
     AI_Cache.RemoveAll
 End Sub
 
@@ -867,6 +880,8 @@ Sub OpenSettings()
             GetSetting("AI tools", "API Keys", "openrouter", "")
         .MistralAIAPIKeyTextBox.text = _
             GetSetting("AI tools", "API Keys", "mistralai", "")
+        .CohereAPIKeyTextBox.text = _
+            GetSetting("AI tools", "API Keys", "cohere", "")
         .Show
     End With
 End Sub
@@ -963,7 +978,7 @@ End Sub
 
 Sub PrintTags()
     Dim i As Integer
-    
+
     With ActiveWindow.View.Slide.Tags
         For i = 1 To .Count
             Debug.Print "Name = '" & CStr(.Name(i)) & "', Value = '" & CStr(.Value(i)) & "'"
@@ -973,7 +988,7 @@ End Sub
 
 Sub RemoveAllTags()
     Dim i As Integer
-    
+
     With ActiveWindow.View.Slide.Tags
         For i = .Count To 1 Step -1
             .Delete .Name(i)
@@ -991,7 +1006,7 @@ End Sub
 #If IsPowerPoint Then
 
 Private Sub TransformSelection(command As String, _
-                               Optional guidelines As String, _
+                               Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
                                Optional extract_tripple_quotes As Boolean = True, _
@@ -1040,7 +1055,7 @@ Private Sub TransformSelection(command As String, _
 
         result = TransformText(source:=source, _
                                command:=command, _
-                               guidelines:=guidelines, _
+                               preamble:=preamble, _
                                temperature:=temperature, _
                                correct_punctuation:=correct_punctuation, _
                                extract_tripple_quotes:=extract_tripple_quotes, _
@@ -1060,7 +1075,7 @@ End Sub
 #If IsWord Then
 
 Private Sub TransformSelection(command As String, _
-                               Optional guidelines As String, _
+                               Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
                                Optional extract_tripple_quotes As Boolean = True, _
@@ -1070,7 +1085,7 @@ Private Sub TransformSelection(command As String, _
                                Optional remove_prefix As String)
     Dim source As String
     Dim result As String
-    
+
     Dim deselect_chars As Integer
     Dim i As Integer
     Dim c As String
@@ -1085,22 +1100,22 @@ Private Sub TransformSelection(command As String, _
         End If
 
         source = .text
-        
+
         deselect_chars = 0
-        
+
         For i = Len(source) To 1 Step -1
             c = Mid(source, i, 1)
-            
+
             If c = Chr(10) Or c = Chr(13) Or c = " " Then
                 deselect_chars = deselect_chars + 1
             Else
                 Exit For
             End If
         Next i
-        
+
         result = TransformText(source:=source, _
                                command:=command, _
-                               guidelines:=guidelines, _
+                               preamble:=preamble, _
                                temperature:=temperature, _
                                correct_punctuation:=correct_punctuation, _
                                extract_tripple_quotes:=extract_tripple_quotes, _
@@ -1126,7 +1141,7 @@ End Sub
 #If IsExcel Then
 
 Private Sub TransformSelection(command As String, _
-                               Optional guidelines As String, _
+                               Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
                                Optional extract_tripple_quotes As Boolean = True, _
@@ -1160,10 +1175,10 @@ Private Sub TransformSelection(command As String, _
         addr = .Address(External:=True)
 
         source = .Cells(1).text
-        
+
         result = TransformText(source:=source, _
                                command:=command, _
-                               guidelines:=guidelines, _
+                               preamble:=preamble, _
                                temperature:=temperature, _
                                correct_punctuation:=correct_punctuation, _
                                extract_tripple_quotes:=extract_tripple_quotes, _
@@ -1172,7 +1187,7 @@ Private Sub TransformSelection(command As String, _
                                model:=model, _
                                remove_prefix:=remove_prefix)
     End With
-    
+
     If IsEmpty(result) Or result = "" Then
         Exit Sub
     End If
@@ -1195,7 +1210,7 @@ End Sub
 
 Private Function TransformText(ByVal source As String, _
                                ByVal command As String, _
-                               Optional guidelines As String, _
+                               Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
                                Optional extract_tripple_quotes As Boolean = True, _
@@ -1214,7 +1229,7 @@ Private Function TransformText(ByVal source As String, _
     If correct_punctuation Then
         c = Right(source, 1)
         full_stop_added = False
-        
+
         If c <> "." And _
            c <> ":" And _
            c <> ";" And _
@@ -1235,27 +1250,27 @@ Private Function TransformText(ByVal source As String, _
 
     result = LLMTextCommand(command:=command, _
                             source:=source, _
-                            guidelines:=guidelines, _
+                            preamble:=preamble, _
                             model:=model, _
                             temperature:=temperature, _
                             stop_word:=stop_word)
-    
+
     If Not IsEmpty(result) Then
         result = Trim_(result)
     End If
-    
+
     If Not IsEmpty(result) And result <> "" Then
         If extract_tripple_quotes Then
             a = InStr(result, """""""")
             b = InStrRev(result, """""""")
-            
+
             If a > 0 And b > 0 And a <> b Then
                 result = Mid(result, a + 3, Len(result) - a - 2)
                 result = Left(result, InStr(result, """""""") - 1)
                 result = Trim_(result)
             End If
         End If
-    
+
         If correct_punctuation And full_stop_added Then
             If Right(result, 1) = "." Then
                 result = Left(result, Len(result) - 1)
@@ -1297,7 +1312,7 @@ End Function
 
 Private Function LLMTextCommand(ByVal command As String, _
                                 ByVal source As String, _
-                                Optional guidelines As String, _
+                                Optional preamble As String, _
                                 Optional temperature As Double = 0, _
                                 Optional model As String, _
                                 Optional placeholder As String = "{{input}}", _
@@ -1306,10 +1321,10 @@ Private Function LLMTextCommand(ByVal command As String, _
                                 As String
     Dim result As String
     Dim prompt As String
-    
+
     command = Trim_(command)
     source = Trim_(source)
-    
+
     If command <> "" And source <> "" Then
         If Not IsEmpty(placeholder) And placeholder <> "" And InStr(command, placeholder) > 0 Then
             prompt = Replace(command, placeholder, source)
@@ -1322,38 +1337,38 @@ Private Function LLMTextCommand(ByVal command As String, _
                       """""""" & source & """""""")
         End If
     End If
-    
+
     prompt = Trim_(prompt)
-    
+
     If prompt = "" Then
         LLMTextCommand = ""
         Exit Function
     End If
 
     result = LLMChat(prompt:=prompt, _
-                     guidelines:=guidelines, _
+                     preamble:=preamble, _
                      temperature:=temperature, _
                      stop_word:=stop_word, _
                      model:=model)
-    
+
     result = Trim_(result)
-    
+
     If normalize_newline Then
         result = Replace(result, vbNewLine, vbLf)
         result = Replace(result, Chr(13), "")
     End If
-    
+
     LLMTextCommand = result
 End Function
 
 Private Function GetAPIKey(provider As String, _
                            Optional safe As Boolean = False) As String
     GetAPIKey = GetSetting("AI tools", "API Keys", provider, "")
-    
+
     If safe Then
         Exit Function
     End If
-    
+
     If IsEmpty(GetAPIKey) Or GetAPIKey = "" Then
         Err.Raise vbObjectError + 1001, , _
             ("API Key for " & provider & " is not set. " & _
@@ -1363,24 +1378,24 @@ Private Function GetAPIKey(provider As String, _
 End Function
 
 Private Function LLMChat(prompt As String, _
-                         Optional ByVal guidelines As String, _
+                         Optional ByVal preamble As String, _
                          Optional temperature As Double = 0, _
                          Optional stop_word As String, _
                          Optional ByVal model As String) _
                          As String
     Dim provider As String
     Dim base_url As String
-    
+
     If IsEmpty(model) Or model = "" Then
         model = GetDefaultModel()
     End If
 
     provider = GetProvider(model)
-    
-    If IsEmpty(guidelines) Or guidelines = "" Then
-        guidelines = GetDefaultChatguidelines()
+
+    If IsEmpty(preamble) Or preamble = "" Then
+        preamble = GetDefaultPreamble()
     End If
-    
+
     If provider = "openai" _
             Or provider = "openrouter" _
             Or provider = "mistralai" _
@@ -1388,23 +1403,31 @@ Private Function LLMChat(prompt As String, _
         LLMChat = LLMChatOpenAI(provider:=provider, _
                                 model:=model, _
                                 prompt:=prompt, _
-                                guidelines:=guidelines, _
+                                preamble:=preamble, _
                                 temperature:=temperature, _
                                 stop_word:=stop_word)
-    
+
     ElseIf provider = "anthropic" Then
         LLMChat = LLMChatAnthropic(model:=model, _
                                    prompt:=prompt, _
-                                   guidelines:=guidelines, _
+                                   preamble:=preamble, _
                                    temperature:=temperature, _
                                    stop_word:=stop_word)
-    
+
     ElseIf provider = "google" Then
         LLMChat = LLMChatGoogleAI(model:=model, _
                                   prompt:=prompt, _
-                                  guidelines:=guidelines, _
+                                  preamble:=preamble, _
                                   temperature:=temperature, _
                                   stop_word:=stop_word)
+
+    ElseIf provider = "cohere" Then
+        LLMChat = LLMChatCohere(model:=model, _
+                                prompt:=prompt, _
+                                preamble:=preamble, _
+                                temperature:=temperature, _
+                                stop_word:=stop_word)
+
     Else
         Err.Raise vbObjectError + 1001, , "Wrong provider"
     End If
@@ -1413,12 +1436,12 @@ End Function
 Private Function LLMChatOpenAI(provider As String, _
                                model As String, _
                                prompt As String, _
-                               guidelines As String, _
+                               preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional stop_word As String) _
                                As String
     Dim base_url As String
-    
+
     base_url = GetBaseURL(provider)
 
 #If IsWord Then
@@ -1432,10 +1455,10 @@ Private Function LLMChatOpenAI(provider As String, _
     payload.Add "model", GetModelName(model, provider)
     payload.Add "temperature", temperature
     payload.Add "max_tokens", 2000
-    
+
     Dim messages As Collection
     Set messages = New Collection
-    
+
 #If IsWord Then
     Dim d As Scripting.Dictionary
     Set d = New Scripting.Dictionary
@@ -1443,29 +1466,29 @@ Private Function LLMChatOpenAI(provider As String, _
     Dim d As Dictionary
     Set d = New Dictionary
 #End If
-    
+
     d.Add "role", "system"
-    d.Add "content", guidelines
-    
+    d.Add "content", preamble
+
     messages.Add d
-    
+
 #If IsWord Then
     Set d = New Scripting.Dictionary
 #Else
     Set d = New Dictionary
 #End If
-    
+
     d.Add "role", "user"
     d.Add "content", prompt
-    
+
     messages.Add d
 
     payload.Add "messages", messages
-    
+
     If Not IsEmpty(stop_word) And stop_word <> "" Then
         payload.Add "stop", stop_word
     End If
-    
+
     Dim request As String
     request = ConvertToJson(payload)
 
@@ -1478,20 +1501,20 @@ Private Function LLMChatOpenAI(provider As String, _
 
     Dim http As WinHttp.WinHttpRequest
     Set http = New WinHttpRequest
-    
+
     Dim timeout As Long
     timeout = 60000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
-    
+
     http.Open "POST", base_url
     http.SetRequestHeader "Content-Type", "application/json"
     http.SetRequestHeader "Authorization", "Bearer " & GetAPIKey(provider)
-    
+
     On Error GoTo ErrorHandler
     http.Send request
     On Error GoTo 0
     GoTo NoErrors
-    
+
 ErrorHandler:
     On Error GoTo 0
 #If DeveloperMode Then
@@ -1505,17 +1528,17 @@ NoErrors:
     Dim response_str As String
     response_str = http.ResponseText
     response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
-    
+
 #If DeveloperMode Then
     Debug.Print "Response:", response_str
     Debug.Print "<<<<<<<<<<<<"
 #End If
-    
+
     Dim response_json As Object
     Set response_json = ParseJson(response_str)
-    
+
     Dim i As Integer
-    
+
     For i = 0 To response_json.Count - 1
         If response_json.keys()(i) = "error" Then
             Err.Raise vbObjectError + 1001, , _
@@ -1523,13 +1546,13 @@ NoErrors:
                 response_json("error")("message") & ". Press 'End' and try again."
         End If
     Next i
-    
+
     LLMChatOpenAI = response_json("choices")(1)("message")("content")
 End Function
 
 Private Function LLMChatAnthropic(model As String, _
                                   prompt As String, _
-                                  guidelines As String, _
+                                  preamble As String, _
                                   Optional temperature As Double = 0, _
                                   Optional stop_word As String) _
                                   As String
@@ -1546,13 +1569,13 @@ Private Function LLMChatAnthropic(model As String, _
 
     payload.Add "model", GetModelName(model, "anthropic")
     payload.Add "temperature", temperature
-    payload.Add "max_tokens", 4096
-    
-    payload.Add "system", guidelines
-    
+    payload.Add "max_tokens", 4096  ' required
+
+    payload.Add "system", preamble
+
     Dim messages As Collection
     Set messages = New Collection
-    
+
 #If IsWord Then
     Dim d As Scripting.Dictionary
     Set d = New Scripting.Dictionary
@@ -1560,22 +1583,22 @@ Private Function LLMChatAnthropic(model As String, _
     Dim d As Dictionary
     Set d = New Dictionary
 #End If
-    
+
     d.Add "role", "user"
     d.Add "content", prompt
-    
+
     messages.Add d
 
     payload.Add "messages", messages
-    
+
     Dim stop_sequences As Collection
-    
+
     If Not IsEmpty(stop_word) And stop_word <> "" Then
         Set stop_sequences = New Collection
         stop_sequences.Add stop_word
         payload.Add "stop_sequences", stop_sequences
     End If
-    
+
     Dim request As String
     request = ConvertToJson(payload)
 
@@ -1588,21 +1611,21 @@ Private Function LLMChatAnthropic(model As String, _
 
     Dim http As WinHttp.WinHttpRequest
     Set http = New WinHttpRequest
-    
+
     Dim timeout As Long
     timeout = 60000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
-    
+
     http.Open "POST", base_url
     http.SetRequestHeader "Content-Type", "application/json"
     http.SetRequestHeader "X-API-Key", GetAPIKey("anthropic")
     http.SetRequestHeader "Anthropic-Version", "2023-06-01"
-    
+
     On Error GoTo ErrorHandler
     http.Send request
     On Error GoTo 0
     GoTo NoErrors
-    
+
 ErrorHandler:
     On Error GoTo 0
 #If DeveloperMode Then
@@ -1616,17 +1639,17 @@ NoErrors:
     Dim response_str As String
     response_str = http.ResponseText
     response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
-    
+
 #If DeveloperMode Then
     Debug.Print "Response:", response_str
     Debug.Print "<<<<<<<<<<<<"
 #End If
-    
+
     Dim response_json As Object
     Set response_json = ParseJson(response_str)
-    
+
     Dim i As Integer
-    
+
     For i = 0 To response_json.Count - 1
         If response_json.keys()(i) = "error" Then
             Err.Raise vbObjectError + 1001, , _
@@ -1634,18 +1657,18 @@ NoErrors:
                 response_json("error")("message") & ". Press 'End' and try again."
         End If
     Next i
-    
+
     LLMChatAnthropic = response_json("content")(1)("text")
 End Function
 
 Private Function LLMChatGoogleAI(model As String, _
                                  prompt As String, _
-                                 guidelines As String, _
+                                 preamble As String, _
                                  Optional temperature As Double = 0, _
                                  Optional stop_word As String) _
                                  As String
     Dim url As String
-    
+
     url = "https://generativelanguage.googleapis.com/v1beta/models/" _
         & GetModelName(model, "google") & ":generateContent"
 
@@ -1673,7 +1696,7 @@ Private Function LLMChatGoogleAI(model As String, _
 
     gc.Add "temperature", temperature
     gc.Add "maxOutputTokens", 2000
-    
+
     payload.Add "generationConfig", gc
 
     Dim ct As Collection
@@ -1688,7 +1711,7 @@ Private Function LLMChatGoogleAI(model As String, _
 #End If
 
     p.Add "role", "user"
-    
+
 #If IsWord Then
     Dim t As Scripting.Dictionary
     Set t = New Scripting.Dictionary
@@ -1697,7 +1720,7 @@ Private Function LLMChatGoogleAI(model As String, _
     Set t = New Dictionary
 #End If
 
-    t.Add "text", guidelines
+    t.Add "text", preamble
 
     Dim ts As Collection
     Set ts = New Collection
@@ -1713,15 +1736,15 @@ Private Function LLMChatGoogleAI(model As String, _
 #Else
     Set p = New Dictionary
 #End If
-    
+
     p.Add "role", "model"
-    
+
 #If IsWord Then
     Set t = New Scripting.Dictionary
 #Else
     Set t = New Dictionary
 #End If
-    
+
     t.Add "text", "Sure, I can help you with that."
 
     Set ts = New Collection
@@ -1737,15 +1760,15 @@ Private Function LLMChatGoogleAI(model As String, _
 #Else
     Set p = New Dictionary
 #End If
-    
+
     p.Add "role", "user"
-    
+
 #If IsWord Then
     Set t = New Scripting.Dictionary
 #Else
     Set t = New Dictionary
 #End If
-    
+
     t.Add "text", prompt
 
     p.Add "parts", t
@@ -1766,19 +1789,19 @@ Private Function LLMChatGoogleAI(model As String, _
 
     Dim http As WinHttp.WinHttpRequest
     Set http = New WinHttpRequest
-    
+
     Dim timeout As Long
     timeout = 60000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
-    
+
     http.Open "POST", url & "?key=" & GetAPIKey("google")
     http.SetRequestHeader "Content-Type", "application/json"
-    
+
     On Error GoTo ErrorHandler
     http.Send request
     On Error GoTo 0
     GoTo NoErrors
-    
+
 ErrorHandler:
     On Error GoTo 0
 #If DeveloperMode Then
@@ -1792,17 +1815,17 @@ NoErrors:
     Dim response_str As String
     response_str = http.ResponseText
     response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
-    
+
 #If DeveloperMode Then
     Debug.Print "Response:", response_str
     Debug.Print "<<<<<<<<<<<<"
 #End If
-    
+
     Dim response_json As Object
     Set response_json = ParseJson(response_str)
-    
+
     Dim i As Integer
-    
+
     For i = 0 To response_json.Count - 1
         If response_json.keys()(i) = "error" Then
             Err.Raise vbObjectError + 1001, , _
@@ -1810,9 +1833,110 @@ NoErrors:
                 response_json("error")("message") & " Press 'End' and try again."
         End If
     Next i
-    
+
     LLMChatGoogleAI = response_json("candidates")(1)("content")("parts")(1)("text")
 End Function
+
+Private Function LLMChatCohere(model As String, _
+                               prompt As String, _
+                               preamble As String, _
+                               Optional temperature As Double = 0, _
+                               Optional stop_word As String) _
+                               As String
+    Dim base_url As String
+    base_url = "https://api.cohere.ai/v1/chat"
+
+#If IsWord Then
+    Dim payload As Scripting.Dictionary
+    Set payload = New Scripting.Dictionary
+#Else
+    Dim payload As Dictionary
+    Set payload = New Dictionary
+#End If
+
+    payload.Add "model", GetModelName(model, "cohere")
+    payload.Add "temperature", temperature
+    payload.Add "preamble", preamble
+    payload.Add "message", prompt
+
+    Dim stop_sequences As Collection
+
+    If Not IsEmpty(stop_word) And stop_word <> "" Then
+        Set stop_sequences = New Collection
+        stop_sequences.Add stop_word
+        payload.Add "stop_sequences", stop_sequences
+    End If
+
+    Dim request As String
+    request = ConvertToJson(payload)
+
+#If DeveloperMode Then
+    Debug.Print ">>>>>>>>>>>>"
+    Debug.Print "Provider:", "cohere"
+    Debug.Print "Base URL:", base_url
+    Debug.Print "Request:", request
+#End If
+
+    Dim http As WinHttp.WinHttpRequest
+    Set http = New WinHttpRequest
+
+    Dim timeout As Long
+    timeout = 60000  ' ms
+    http.SetTimeouts timeout, timeout, timeout, timeout
+
+    http.Open "POST", base_url
+    http.SetRequestHeader "Accept", "application/json"
+    http.SetRequestHeader "Content-Type", "application/json"
+    http.SetRequestHeader "Authorization", "Bearer " & GetAPIKey("cohere")
+
+    On Error GoTo ErrorHandler
+    http.Send request
+    On Error GoTo 0
+    GoTo NoErrors
+
+ErrorHandler:
+    On Error GoTo 0
+#If DeveloperMode Then
+    Debug.Print "HTTP Error:", Err.Description
+    Debug.Print "<<<<<<<<<<<<"
+#End If
+    Err.Raise vbObjectError + 1001, , _
+        "HTTP Error: " & Err.Description & ". Press 'End' and try again."
+
+NoErrors:
+    Dim response_str As String
+    response_str = http.ResponseText
+    response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
+
+#If DeveloperMode Then
+    Debug.Print "Response:", response_str
+    Debug.Print "<<<<<<<<<<<<"
+#End If
+
+    Dim response_json As Object
+    Set response_json = ParseJson(response_str)
+
+    If http.status >= 300 Then
+        Dim i As Integer
+
+        For i = 0 To response_json.Count - 1
+            If response_json.keys()(i) = "message" Then
+                Err.Raise vbObjectError + 1001, , _
+                    "LLM service provider returned the error: " & _
+                    response_json("message") & ". Press 'End' and try again."
+            End If
+            If response_json.keys()(i) = "data" Then
+                Err.Raise vbObjectError + 1001, , _
+                    "LLM service provider returned the error: " & _
+                    response_json("data") & ". Press 'End' and try again."
+            End If
+        Next i
+    End If
+
+    LLMChatCohere = response_json("text")
+End Function
+
+' #############################################################################
 
 Private Function DecodeText(ByVal text As String, _
                             ByVal fromCharset As String, _
@@ -1975,4 +2099,3 @@ Private Sub UnblockingWait(seconds As Double)
 End Sub
 
 #End If
-

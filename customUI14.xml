@@ -93,8 +93,10 @@
                               label="Gemini"/>
                         <item id="mistral"
                               label="Mistral"/>
+                        <item id="command-r-plus"
+                              label="Command R+"/>
                     </dropDown>
-                    <checkBox id="EnforceRnQComplianceCheckbox" 
+                    <checkBox id="EnforceRnQComplianceCheckbox"
                               label="Enforce compliance"
                               screentip="Enforce Risk compliance"
                               supertip="Disable actions that can potentially violate PwC Risk policies regarding the usage of external services."
