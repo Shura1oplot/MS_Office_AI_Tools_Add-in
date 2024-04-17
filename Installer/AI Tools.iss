@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "AI Tools"
-#define MyAppVersion "20240213-1"
+#define MyAppVersion "20240411-1"
 #define MyAppPublisher "Alexander Gordeev"
 
 [Setup]
