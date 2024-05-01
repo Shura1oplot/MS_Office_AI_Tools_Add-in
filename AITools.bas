@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-01+1
+' Version 2024-05-01+2
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -967,7 +967,7 @@ End Sub
 
 Sub AIToolsTitlesGroupGetVisibleCallback(control As IRibbonControl, _
                                          ByRef returnedVal)
-#If IsPowerPoint Or IsWord Then
+#If IsPowerPoint Then
     returnedVal = True
 #Else
     returnedVal = False
