@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-04-11+1
+' Version 2024-05-01+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -964,6 +964,33 @@ Sub RephraseTitleVariantsButtonCallback(control As IRibbonControl)
 End Sub
 
 #End If
+
+Sub AIToolsTitlesGroupGetVisibleCallback(control As IRibbonControl, _
+                                         ByRef returnedVal)
+#If IsPowerPoint Or IsWord Then
+    returnedVal = True
+#Else
+    returnedVal = False
+#End If
+End Sub
+
+Sub AIToolsEmailGroupGetVisibleCallback(control As IRibbonControl, _
+                                        ByRef returnedVal)
+#If IsPowerPoint Or IsWord Then
+    returnedVal = True
+#Else
+    returnedVal = False
+#End If
+End Sub
+
+Sub AIToolsPlaygroundGroupGetVisibleCallback(control As IRibbonControl, _
+                                             ByRef returnedVal)
+#If IsPowerPoint Then
+    returnedVal = True
+#Else
+    returnedVal = False
+#End If
+End Sub
 
 ' ==============================================================================
 ' Developer functions

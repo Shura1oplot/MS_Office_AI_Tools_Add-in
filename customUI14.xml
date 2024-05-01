@@ -3,7 +3,7 @@
     <ribbon>
         <tabs>
             <tab id="AIToolsTab" label="AI Tools">
-                <group id="AITextGroup" label="Text Tools">
+                <group id="AIToolsTextGroup" label="Text Tools">
                     <button id="CorrectToStandardEnglishButton"
                             label="Spelling (standard)"
                             imageMso="Spelling"
@@ -27,7 +27,7 @@
                             onAction="ParaphraseShortenButtonCallback" />
                 </group>
 
-                <group id="AITitlesGroup" label="Title Tools">
+                <group id="AIToolsTitlesGroup" label="Title Tools" getVisible="AIToolsTitlesGroupGetVisibleCallback">
                     <button id="RephraseConsultingMultiShotButton"
                             label="Rephrase Title (multi-shot)"
                             imageMso="ControlWizards"
@@ -51,7 +51,7 @@
                             onAction="RephraseTitleVariantsButtonCallback" />
                 </group>
 
-                <group id="AIEmailGroup" label="Email Tools">
+                <group id="AIToolsEmailGroup" label="Email Tools" getVisible="AIToolsEmailGroupGetVisibleCallback">
                     <button id="RephrasePoliteConciseButton"
                             label="Rephrase Polite and Concise"
                             imageMso="ShapeSmileyFace"
@@ -68,7 +68,7 @@
                             onAction="RephrasePoliteExtraButtonCallback" />
                 </group>
 
-                <group id="AIPlaygroundGroup" label="Playground">
+                <group id="AIToolsPlaygroundGroup" label="Playground" getVisible="AIToolsPlaygroundGroupGetVisibleCallback">
                     <button id="RunAIButton"
                             label="Run AI"
                             imageMso="MacroPlay"
