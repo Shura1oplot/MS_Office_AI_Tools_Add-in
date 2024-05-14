@@ -84,17 +84,10 @@
                               screentip="Select default LLM model"
                               supertip="Select default LLM model for the 'chat' endpoint."
                               getSelectedItemID="AIDefaultModelGetSelectedItemID"
+                              getItemCount="AIDefaultModelGetItemCount"
+                              getItemID="AIDefaultModelGetItemID"
+                              getItemLabel="AIDefaultModelGetItemLabel"
                               onAction="AIDefaultModelDropdownCallback">
-                        <item id="chatgpt"
-                              label="ChatGPT"/>
-                        <item id="claude"
-                              label="Claude"/>
-                        <item id="gemini"
-                              label="Gemini"/>
-                        <item id="mistral"
-                              label="Mistral"/>
-                        <item id="command-r-plus"
-                              label="Command R+"/>
                     </dropDown>
                     <checkBox id="EnforceRnQComplianceCheckbox"
                               label="Enforce compliance"

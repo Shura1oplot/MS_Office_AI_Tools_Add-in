@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-01+2
+' Version 2024-05-14+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -8,6 +8,7 @@ Attribute VB_Name = "AITools"
 ' - Microsoft Forms 2.0 Object Library
 
 Option Explicit
+
 
 ' ==============================================================================
 ' Preprocessor Constants
@@ -18,6 +19,7 @@ Option Explicit
 #Const IsExcel = False
 
 #Const DeveloperMode = False
+
 
 ' ==============================================================================
 ' Imports
@@ -30,6 +32,7 @@ Public Declare PtrSafe Function WaitMessage Lib "user32" () As Long
 
 #End If
 
+
 ' ==============================================================================
 ' Global Variables
 ' ==============================================================================
@@ -39,6 +42,7 @@ Private DefaultModel As String
 #If IsExcel Then
 Private AI_Cache As Dictionary
 #End If
+
 
 ' ==============================================================================
 ' Main LLM Settings
@@ -86,7 +90,9 @@ Private Function GetModelName(model As String, _
                               As String
     ' https://platform.openai.com/docs/models
     If provider = "openai" Then
-        If model = "gpt-4" Or model = "gpt-4-turbo" Or model = "chatgpt" Then
+        If model = "gpt-4o" Then
+            GetModelName = "gpt-4o"
+        ElseIf model = "gpt-4" Or model = "gpt-4-turbo" Or model = "chatgpt" Then
             GetModelName = "gpt-4-turbo"
         ElseIf model = "gpt-3" Or model = "gpt-3.5" Then
             GetModelName = "gpt-3.5-turbo-instruct"
@@ -195,6 +201,7 @@ Private Function GetDefaultPreamble() As String
          "and without any additions (if the opposit is not clearly stated by the user). Use business language whenever possible " & _
          "unless otherwise stated.")
 End Function
+
 
 ' ==============================================================================
 ' Main Macros
@@ -347,6 +354,7 @@ End Sub
 
 #End If
 
+
 ' ==============================================================================
 ' Run AI for Playground
 ' ==============================================================================
@@ -396,6 +404,7 @@ Sub RunAI()
 End Sub
 
 #End If
+
 
 ' ==============================================================================
 ' Rephrase Title Macro
@@ -644,6 +653,7 @@ End Sub
 
 #End If
 
+
 ' ==============================================================================
 ' Excel UDF
 ' ==============================================================================
@@ -864,6 +874,7 @@ End Sub
 
 #End If
 
+
 ' ==============================================================================
 ' Forms
 ' ==============================================================================
@@ -886,6 +897,7 @@ Sub OpenSettings()
     End With
 End Sub
 
+
 ' ==============================================================================
 ' CustomUI Callbacks
 ' ==============================================================================
@@ -900,6 +912,52 @@ Sub AIDefaultModelGetSelectedItemID(control As IRibbonControl, _
                                     ByRef returnedVal As Variant)
     returnedVal = GetDefaultModel()
 End Sub
+
+Sub AIDefaultModelGetItemCount(control As IRibbonControl, _
+                               ByRef returnedVal)
+    returnedVal = 6
+End Sub
+
+Sub AIDefaultModelGetItemID(control As IRibbonControl, _
+                            index As Integer, _
+                            ByRef returnedVal)
+    If index = 0 Then
+        returnedVal = "chatgpt"
+    ElseIf index = 1 Then
+        returnedVal = "gpt-4o"
+    ElseIf index = 2 Then
+        returnedVal = "claude"
+    ElseIf index = 3 Then
+        returnedVal = "gemini"
+    ElseIf index = 4 Then
+        returnedVal = "mistral"
+    ElseIf index = 5 Then
+        returnedVal = "command-r-plus"
+    Else
+        returnedVal = "error"
+    End If
+End Sub
+
+Sub AIDefaultModelGetItemLabel(control As IRibbonControl, _
+                               index As Integer, _
+                               ByRef returnedVal)
+    If index = 0 Then
+        returnedVal = "ChatGPT"
+    ElseIf index = 1 Then
+        returnedVal = "GPT-4o"
+    ElseIf index = 2 Then
+        returnedVal = "Claude"
+    ElseIf index = 3 Then
+        returnedVal = "Gemini"
+    ElseIf index = 4 Then
+        returnedVal = "Mistral"
+    ElseIf index = 5 Then
+        returnedVal = "Command R+"
+    Else
+        returnedVal = "ERROR"
+    End If
+End Sub
+
 
 Sub CorrectToStandardEnglishButtonCallback(control As IRibbonControl)
     CorrectToStandardEnglish
@@ -946,7 +1004,6 @@ Sub EnforceRnQComplianceCheckboxOnActionCallback(control As IRibbonControl, _
     ' TODO
 End Sub
 
-'Callback for EnforceRnQComplianceCheckbox getPressed
 Sub EnforceRnQComplianceCheckboxGetPressedCallback(control As IRibbonControl, _
                                                    ByRef returnedVal)
     returnedVal = False
@@ -992,6 +1049,7 @@ Sub AIToolsPlaygroundGroupGetVisibleCallback(control As IRibbonControl, _
 #End If
 End Sub
 
+
 ' ==============================================================================
 ' Developer functions
 ' ==============================================================================
@@ -1025,6 +1083,7 @@ End Sub
 
 #End If
 #End If
+
 
 ' ==============================================================================
 ' Service functions
