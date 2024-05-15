@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-14+1
+' Version 2024-05-15+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -56,33 +56,18 @@ Private Function GetDefaultModel() As String
     End If
 End Function
 
-Private Function GetProvider(Optional model As String) As String
+Private Function GetProvider(model As String) As String
     Dim provider As String
 
-    If IsEmpty(model) Or model = "" Then
-        provider = "openrouter"
-    ElseIf model = "chatgpt" Or StartsWith(model, "gpt-") Then
-        provider = "openai"
+    If model = "chatgpt" Or StartsWith(model, "gpt-") Then
+        GetProvider = "openai"
     ElseIf model = "claude" Or StartsWith(model, "claude-") Then
-        provider = "anthropic"
+        GetProvider = "anthropic"
     ElseIf model = "gemini" Or StartsWith(model, "gemini-") Then
-        provider = "google"
-    ElseIf model = "mistral" Or StartsWith(model, "mistral-") Then
-        provider = "mistralai"
-    ElseIf model = "command-r" Or model = "command-r-plus" Then
-        provider = "cohere"
+        GetProvider = "google"
     Else
-        provider = "openrouter"
+        Err.Raise vbObjectError + 1001, , "Invalid model"
     End If
-
-    If provider <> "openrouter" And GetAPIKey(provider, safe:=True) = "" Then
-#If DeveloperMode Then
-        Debug.Print "No API key for '" & provider & "'; fallback to 'openrouter'"
-#End If
-        provider = "openrouter"
-    End If
-
-    GetProvider = provider
 End Function
 
 Private Function GetModelName(model As String, _
@@ -94,84 +79,29 @@ Private Function GetModelName(model As String, _
             GetModelName = "gpt-4o"
         ElseIf model = "gpt-4" Or model = "gpt-4-turbo" Or model = "chatgpt" Then
             GetModelName = "gpt-4-turbo"
-        ElseIf model = "gpt-3" Or model = "gpt-3.5" Then
-            GetModelName = "gpt-3.5-turbo-instruct"
         Else
-            Err.Raise vbObjectError + 1001, , "Wrong model"
-        End If
-
-    ' https://docs.mistral.ai/platform/endpoints/
-    ElseIf provider = "mistralai" Then
-        If model = "mistral" Then
-            GetModelName = "mistral-large-latest"
-        ElseIf model = "mistral-medium" Then
-            GetModelName = "mistral-medium-latest"
-        ElseIf model = "mistral-large" Then
-            GetModelName = "mistral-large-latest"
-        Else
-            Err.Raise vbObjectError + 1001, , "Wrong model"
+            Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
 
     ' https://console.anthropic.com/
+    ' https://docs.anthropic.com/en/docs/models-overview
     ElseIf provider = "anthropic" Then
-        If model = "claude" Or model = "claude-3" Then
+        If model = "claude" Or model = "claude-3" Or model = "claude-3-opus" Then
             GetModelName = "claude-3-opus-20240229"
         Else
-            Err.Raise vbObjectError + 1001, , "Wrong model"
-        End If
-
-    ' https://openrouter.ai/docs#models
-    ElseIf provider = "openrouter" Then
-        ' OpenAI
-        If model = "chatgpt" Or StartsWith(model, "gpt-") Then
-            GetModelName = "openai/gpt-4-turbo-preview"
-
-        ' Anthropic
-        ElseIf model = "claude" Or model = "claude-3" Or model = "claude-3-opus" Then
-            GetModelName = "anthropic/claude-3-opus"
-        ElseIf model = "claude-2" Then
-            GetModelName = "anthropic/claude-2"
-
-        ' Google
-        ElseIf model = "gemini" Or model = "gemini-pro" Or model = "gemini-1.0-pro" _
-                Or model = "gemini-pro-latest" Then
-            GetModelName = "google/gemini-pro"
-        ElseIf StartsWith(model, "gemini-") Then
-            GetModelName = "google/" & model
-
-        ' Mistral
-        ElseIf model = "mistral" Then
-            GetModelName = "mistralai/mistral-large"
-        ElseIf StartsWith(model, "mistral-") Then
-            GetModelName = "mistralai/" & model
-
-        ' Command R/R+
-        ElseIf model = "command-r" Or model = "command-r-plus" Then
-            GetModelName = "cohere/" & model
-        Else
-            Err.Raise vbObjectError + 1001, , "Wrong model"
+            Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
 
     ' https://ai.google.dev/models/gemini
     ElseIf provider = "google" Then
-        If model = "gemini" Or model = "gemini-pro" Then
-            GetModelName = "gemini-1.0-pro"
-        ElseIf model = "gemini-pro-latest" Then
+        If model = "gemini" Or model = "gemini-pro" Or "gemini-pro-latest" Then
             GetModelName = "gemini-1.0-pro-latest"
         Else
-            Err.Raise vbObjectError + 1001, , "Wrong model"
-        End If
-
-    ' https://docs.cohere.com/docs/models
-    ElseIf provider = "cohere" Then
-        If model = "command-r" Or model = "command-r-plus" Then
-            GetModelName = model
-        Else
-            Err.Raise vbObjectError + 1001, , "Wrong model"
+            Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
 
     Else
-        Err.Raise vbObjectError + 1001, , "Wrong provider"
+        Err.Raise vbObjectError + 1001, , "Invalid provider"
 
     End If
 End Function
@@ -181,25 +111,18 @@ Private Function GetBaseURL(provider As String) As String
     If provider = "openai" Then
         GetBaseURL = "https://api.openai.com/v1/chat/completions"
 
-    ElseIf provider = "openrouter" Then
-        GetBaseURL = "https://openrouter.ai/api/v1/chat/completions"
-
-    ElseIf provider = "mistralai" Then
-        GetBaseURL = "https://api.mistral.ai/v1/chat/completions"
-
     Else
-        Err.Raise vbObjectError + 1001, , "Wrong provider"
+        Err.Raise vbObjectError + 1001, , "Invalid provider"
     End If
 End Function
 
 Private Function GetDefaultPreamble() As String
     GetDefaultPreamble = _
-        ("You are an AI-driven Microsoft Office add-in, which helps management consultants to prepare business presentations " & _
-         "and documents. A user will provide you with a command or ask you a question. Please respond in the most precise way you " & _
-         "can without further clarifications of the input. Be concise and to the point. Do not make up facts. Follow the " & _
-         "instructions provided. If you are provided with a text to work with, make you response based only on the text provided " & _
-         "and without any additions (if the opposit is not clearly stated by the user). Use business language whenever possible " & _
-         "unless otherwise stated.")
+        ("You are an AI-driven Microsoft Office add-in designed to assist management consultants in preparing business " & _
+         "presentations and documents. Respond to user commands and questions with precision and conciseness. " & _
+         "Do not ask for further clarifications of the input. Base your response solely on the provided text, " & _
+         "without adding any information, unless explicitly instructed otherwise. Use business language whenever " & _
+         "possible.")
 End Function
 
 
@@ -210,11 +133,10 @@ End Function
 Sub CorrectToStandardEnglish()
     Dim command As String
     command = ("You are a spell checker. Correct the input text delimited by triple quotes ("""""") to standard English. " & _
-               "If the input text is in standard English, return it as it is. Avoid decoding any abbreviations, " & _
-               "instead preserve them as they are. Try to preserve the length of the input text. " & _
-               "Pay close attention to the usage of articles and prepositions. " & _
-               "Wrap the result text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "Input text:" & vbLf & _
+               "If the input text is in standard English, return it as it is. Preserve abbreviations and try to maintain " & _
+               "the text length. Pay close attention to the usage of articles and prepositions. Wrap the result text in " & _
+               "triple quotes ("""""") as well." & vbLf & vbLf & _
+               "# Input text:" & vbLf & _
                """""""{{input}}""""""")
     TransformSelection command:=command, _
                        temperature:=0
@@ -222,13 +144,12 @@ End Sub
 
 Sub CorrectToStandardEnglishBusiness()
     Dim command As String
-    command = ("You are a professional linguist. Rephrase the input text delimited by triple quotes ("""""") " & _
-               "to correct it to standard English in a business style. If the input text is in standard English " & _
-               "and follow business style, return it as it is. Avoid decoding any abbreviations, instead " & _
-               "preserve them as they are. Try to preserve the length of the input text. The result text " & _
-               "should be clear and concise. Pay close attention to the usage of articles and prepositions. " & _
-               "Wrap the rephrased text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "Input text:" & vbLf & _
+    command = ("You are a professional linguist. Rephrase the input text delimited by triple quotes ("""""") to standard " & _
+               "English in a business style. If the input text is already in standard English and follows a business style, " & _
+               "return it as it is. Preserve abbreviations and try to maintain the text length. Ensure the result is clear " & _
+               "and concise, with correct use of articles and prepositions. Wrap the rephrased text in triple quotes ("""""") " & _
+               "as well." & vbLf & vbLf & _
+               "# Input text:" & vbLf & _
                """""""{{input}}""""""")
     TransformSelection command:=command, _
                        temperature:=0.1
@@ -236,11 +157,11 @@ End Sub
 
 Sub ParaphraseShorten()
     Dim command As String
-    command = ("You are a professional linguist. Paraphrase the input text delimited by triple quotes ("""""") " & _
-               "to reduce its length by quarter or half, but preserve its core meaning and key messages. " & _
-               "The output text should be in standard English in a business style, clean and concise. " & _
-               "Wrap the paraphrased text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "Input text:" & vbLf & _
+    command = ("You are a professional linguist. Paraphrase the input text delimited by triple quotes ("""""") to reduce its " & _
+               "length by a quarter or half, while preserving its core meaning and key messages. Ensure the output is in " & _
+               "standard English, business style, and is clean and concise. Wrap the paraphrased text in triple quotes ("""""") " & _
+               "as well." & vbLf & vbLf & _
+               "# Input text:" & vbLf & _
                """""""{{input}}""""""")
     TransformSelection command:=command, _
                        temperature:=0.3
@@ -250,11 +171,10 @@ End Sub
 
 Sub RephraseConsultingZeroShot()
     Dim command As String
-    command = ("You are a professional linguist. Rephrase the input text delimited by triple quotes " & _
-               "("""""") using the style that the leading management consulting company, McKinsey, " & _
-               "uses in its articles and presentations. " & _
+    command = ("You are a professional linguist. Rephrase the input text delimited by triple quotes ("""""") using the style of " & _
+               "McKinsey's articles and presentations. Focus on maintaining clarity, precision, and a professional tone. " & _
                "Wrap the rephrased text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "Input text:" & vbLf & _
+               "# Input text:" & vbLf & _
                """""""{{input}}""""""")
     TransformSelection command:=command, _
                        temperature:=0.5
@@ -263,51 +183,51 @@ End Sub
 Sub RephraseConsultingMultiShot()
     Dim s As String
 
-    ' Don't call them titles as LLMs understand "titles" in a more common way (non actionable)
     s = ""
-    s = s + "You are a professional linguist. "
-    s = s + "The following extracts were taken from a business presentation. "
-    s = s + "You need to rephrase an extract to change its style to the style usually used by management consultants. "
-    s = s + "As guidelines use the style used by top consulting firms, like McKinsey, BCG, and Bain. "
-    s = s + "Preserve the meaning and all key messages of the source extract. "
-    s = s + "Do not convert the extract to the format of the presentation title. "
-    s = s + "The lenght of the rephrased extract should close to the length of the source one. "
-    s = s + "The input text is in the ""SOURCE:"" field wrapped in tripple quotes (""""""), "
-    s = s + "the rephrased text should be in the ""RESULT:"" field and also wrapped in tripple quotes (""""""), " & vbLf & vbLf
-    s = s + "# Examples:" & vbLf & vbLf
-    s = s + "SOURCE: """"""We conducted the benchmark exercise in 5 steps to select and study the most digitally advanced and the most relevant to CLIENT companies.""""""" & vbLf
-    s = s + "RESULT: """"""We have followed a five-tiered tailored approach to select and benchmark the most digitally advanced and significant companies in the world.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""We collected many open indexes and ratings from various sources to select the most relevant entities for the benchmarking.""""""" & vbLf
-    s = s + "RESULT: """"""To ensure accuracy in our benchmarking exercise, we made sure to select the entities based on the most significant global sources within the CLIENT's industry.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""We studied national, sector-specific, and CLIENT's Corporate strategies to align the benchmarking with Saudi Arabia aspirations.""""""" & vbLf
-    s = s + "RESULT: """"""We rigorously aligned our criteria with national, sector-specific, and CLIENT's key performance indicators (KPIs) and strategic aspirations.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""To focus on the most relevant benchmarking candidates we screened the long list of 100+ companies using two filters: its specialization and annual operations throughput.""""""" & vbLf
-    s = s + "RESULT: """"""We focused our screening criteria on assessing a list of over 100 ports based on two strategic key pillars: specialization and size of business.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""Container ports were selected for the benchmarking as this type of cargo is in the focus of the national and sector-specific strategies.""""""" & vbLf
-    s = s + "RESULT: """"""“Containers” present promising growth opportunities for CLIENT and is a key focus area for the national and sector-specific strategies.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""Based on CLIENT’s and sectoral KPIs we defined selection criteria and developed a scoring model to select 5 target entities for the benchmarking exercise.""""""" & vbLf
-    s = s + "RESULT: """"""We developed a scoring model that factored in national, sectorial and organizational KPIs and aspirations to shortlist 5 entities for benchmarking.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""Based on 6 selection criteria we defined 10 numeric parameters for our scoring model, which rules are based on current and target CLIENT’s and sectoral KPIs.""""""" & vbLf
-    s = s + "RESULT: """"""Our approach involved leveraging those KPIs as the foundation of our model, while implementing a scoring mechanism that encompasses additional factors.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""Finally, 5 entities were selected for the benchmarking exercise: 4 with the highest score points, and one additional as the closest competitor of CLIENT in the Middle East.""""""" & vbLf
-    s = s + "RESULT: """"""Five ports are strategically selected including the top-performing four companies as per our model, as well as the closest regional competitor.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""The benchmarking will focus on analysis of digitalization experience of port authorities and port regulators in alignment with CLIENT’s operating model.""""""" & vbLf
-    s = s + "RESULT: """"""To ensure our analysis is aligned with CLIENT’s current and future strategic plans, we will tailor our assessment to focus on key roles in the supply chain.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "SOURCE: """"""For a comprehensive benchmarking exercise, six dimensions were defined for the benchmarking to address important questions of the CLIENT’s Digital Strategy.""""""" & vbLf
-    s = s + "RESULT: """"""To ensure our benchmarking exercise is consistent with the current state, we have defined six critical dimensions that will significantly impact CLIENT’s digital future.""""""" & vbLf
-    s = s + "" & vbLf & vbLf
-    s = s + "# Your task:" & vbLf & vbLf
-    s = s + "SOURCE: """"""{{input}}""""""" & vbLf & vbLf
-    s = s + "Do not repeat the source text, write only the rephrased extract starting with ""RESULT:""."
+    s = s & "You are a professional linguist. The following extracts were taken from a business presentation. Your task is to rephrase each extract in a style commonly used by top management "
+    s = s & "consulting firms like McKinsey, BCG, and Bain. Preserve the meaning and all key messages of the source extract. The length of the rephrased extract should be close to the length "
+    s = s & "of the source. Do not convert the extract to the format of the presentation title. " & vbLf
+    s = s & "" & vbLf
+    s = s & "Guidelines for rephrasing:" & vbLf
+    s = s & "- Use a professional, concise, and strategic tone." & vbLf
+    s = s & "- Maintain clarity and precision in language." & vbLf
+    s = s & "- Focus on conveying confidence and expertise." & vbLf
+    s = s & "" & vbLf
+    s = s & "# Examples:" & vbLf
+    s = s & "SOURCE: """"""We conducted the benchmark exercise in 5 steps to select and study the most digitally advanced and the most relevant to CLIENT companies."""""" " & vbLf
+    s = s & "RESULT: """"""We have followed a five-tiered tailored approach to select and benchmark the most digitally advanced and significant companies in the world.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""We collected many open indexes and ratings from various sources to select the most relevant entities for the benchmarking."""""" " & vbLf
+    s = s & "RESULT: """"""To ensure accuracy in our benchmarking exercise, we made sure to select the entities based on the most significant global sources within the CLIENT's industry.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""We studied national, sector-specific, and CLIENT's Corporate strategies to align the benchmarking with Saudi Arabia aspirations."""""" " & vbLf
+    s = s & "RESULT: """"""We rigorously aligned our criteria with national, sector-specific, and CLIENT's key performance indicators (KPIs) and strategic aspirations.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""To focus on the most relevant benchmarking candidates we screened the long list of 100+ companies using two filters: its specialization and annual operations throughput."""""" " & vbLf
+    s = s & "RESULT: """"""We focused our screening criteria on assessing a list of over 100 ports based on two strategic key pillars: specialization and size of business.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""Container ports were selected for the benchmarking as this type of cargo is in the focus of the national and sector-specific strategies."""""" " & vbLf
+    s = s & "RESULT: """"""'Containers' present promising growth opportunities for CLIENT and is a key focus area for the national and sector-specific strategies.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""Based on CLIENT’s and sectoral KPIs we defined selection criteria and developed a scoring model to select 5 target entities for the benchmarking exercise."""""" " & vbLf
+    s = s & "RESULT: """"""We developed a scoring model that factored in national, sectorial and organizational KPIs and aspirations to shortlist 5 entities for benchmarking.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""Based on 6 selection criteria we defined 10 numeric parameters for our scoring model, which rules are based on current and target CLIENT’s and sectoral KPIs."""""" " & vbLf
+    s = s & "RESULT: """"""Our approach involved leveraging those KPIs as the foundation of our model, while implementing a scoring mechanism that encompasses additional factors.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""Finally, 5 entities were selected for the benchmarking exercise: 4 with the highest score points, and one additional as the closest competitor of CLIENT in the Middle East."""""" " & vbLf
+    s = s & "RESULT: """"""Five ports are strategically selected including the top-performing four companies as per our model, as well as the closest regional competitor.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""The benchmarking will focus on analysis of digitalization experience of port authorities and port regulators in alignment with CLIENT’s operating model."""""" " & vbLf
+    s = s & "RESULT: """"""To ensure our analysis is aligned with CLIENT’s current and future strategic plans, we will tailor our assessment to focus on key roles in the supply chain.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "SOURCE: """"""For a comprehensive benchmarking exercise, six dimensions were defined for the benchmarking to address important questions of the CLIENT’s Digital Strategy."""""" " & vbLf
+    s = s & "RESULT: """"""To ensure our benchmarking exercise is consistent with the current state, we have defined six critical dimensions that will significantly impact CLIENT’s digital future.""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "# Your task:" & vbLf
+    s = s & "SOURCE: """"""{{Your input text here}}""""""" & vbLf
+    s = s & "" & vbLf
+    s = s & "Do not repeat the source text, write only the rephrased extract starting with ""RESULT:""."
 
     TransformSelection command:=s, _
                        temperature:=0.5, _
@@ -321,14 +241,12 @@ End Sub
 Sub RephrasePoliteConcise()
     Dim command As String
 
-    command = ("Rewrite the input message delimited by triple quotes ("""""") to be more indirect, " & _
-               "polite, delicate, and considerate. Keep it concise and to the point, and make " & _
-               "it suitable for communication with executive-level management. " & _
-               "Ensure that the cultural sensibilities and professional etiquettes " & _
-               "common in Arab and European contexts are considered, " & _
-               "maintaining the original message's intent. " & _
-               "Wrap the result text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "Input text:" & vbLf & _
+    command = ("You are a professional linguist." & _
+               "Rewrite the input message delimited by triple quotes ("""""") to be more indirect, polite, delicate, " & _
+               "and considerate. Keep it concise and suitable for executive-level management. Consider cultural " & _
+               "sensibilities and professional etiquette common in Arab and European contexts, maintaining the original " & _
+               "message's intent. Wrap the result text in triple quotes ("""""") as well." & vbLf & vbLf & _
+               "# Input text:" & vbLf & _
                """""""{{input}}""""""")
     TransformSelection command:=command, _
                        temperature:=0.2
@@ -337,15 +255,13 @@ End Sub
 Sub RephrasePoliteExtra()
     Dim command As String
 
-    command = ("Take the input message delimited by triple quotes ("""""") and rewrite it " & _
-               "to be more indirect, polite, delicate, and considerate. Emphasize " & _
-               "readiness to collaborate and showing respect for the " & _
-               "recipient's time and efforts if suitable. Ensure that " & _
-               "the cultural sensibilities and professional etiquettes " & _
-               "common in Arab and European contexts are considered, " & _
-               "maintaining the original message's intent. " & _
-               "Wrap the result text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "Input text:" & vbLf & _
+    command = ("You are a professional linguist." & _
+               "Take the input message delimited by triple quotes ("""""") and rewrite it to be more indirect, polite, " & _
+               "delicate, and considerate. Emphasize readiness to collaborate and show respect for the recipient's time " & _
+               "and efforts where suitable. Consider cultural sensibilities and professional etiquette common in Arab and " & _
+               "European contexts, maintaining the original message's intent. Wrap the result text in triple quotes " & _
+               "("""""") as well." & vbLf & vbLf & _
+               "# Input text:" & vbLf & _
                """""""{{input}}""""""")
     TransformSelection command:=command, _
                        temperature:=0.2, _
@@ -692,13 +608,11 @@ Function AI(mode As Integer, _
     End If
 
     guidance = _
-        ("You are a VBA User Defined Function (UDF) in Excel. " & _
-         "A user will provide you an input table with a request, a command or a question. " & _
-         "Please respond in the most precise way you can without further clarifications of the input. " & _
-         "Be concise and to the point. Do not make up facts. Follow the instructions provided. " & _
-         "Your response should be formated as a table: each line is a table row, and columns " & _
-         "should be split by a vertical bar (|). Do not repeat user's input. " & _
-         "Use business language whenever possible unless otherwise stated." & vbLf & vbLf)
+        ("You are a VBA User Defined Function (UDF) in Excel. A user will provide you with an input table " & _
+         "and a request, command, or question. Respond precisely and concisely, without making up facts or " & _
+         "seeking further clarifications. Format your response as a table with each line as a row and columns " & _
+         "separated by a vertical bar (|). Do not repeat the user's input. Use business language unless " & _
+         "otherwise stated." & vbLf & vbLf)
 
     If mode = 1 Then
         guidance = guidance & _
@@ -887,12 +801,6 @@ Sub OpenSettings()
             GetSetting("AI tools", "API Keys", "google", "")
         .AnthropicAPIKeyTextBox.text = _
             GetSetting("AI tools", "API Keys", "anthropic", "")
-        .OpenRouterAPIKeyTextBox.text = _
-            GetSetting("AI tools", "API Keys", "openrouter", "")
-        .MistralAIAPIKeyTextBox.text = _
-            GetSetting("AI tools", "API Keys", "mistralai", "")
-        .CohereAPIKeyTextBox.text = _
-            GetSetting("AI tools", "API Keys", "cohere", "")
         .Show
     End With
 End Sub
@@ -915,7 +823,7 @@ End Sub
 
 Sub AIDefaultModelGetItemCount(control As IRibbonControl, _
                                ByRef returnedVal)
-    returnedVal = 6
+    returnedVal = 4
 End Sub
 
 Sub AIDefaultModelGetItemID(control As IRibbonControl, _
@@ -929,10 +837,6 @@ Sub AIDefaultModelGetItemID(control As IRibbonControl, _
         returnedVal = "claude"
     ElseIf index = 3 Then
         returnedVal = "gemini"
-    ElseIf index = 4 Then
-        returnedVal = "mistral"
-    ElseIf index = 5 Then
-        returnedVal = "command-r-plus"
     Else
         returnedVal = "error"
     End If
@@ -949,10 +853,6 @@ Sub AIDefaultModelGetItemLabel(control As IRibbonControl, _
         returnedVal = "Claude"
     ElseIf index = 3 Then
         returnedVal = "Gemini"
-    ElseIf index = 4 Then
-        returnedVal = "Mistral"
-    ElseIf index = 5 Then
-        returnedVal = "Command R+"
     Else
         returnedVal = "ERROR"
     End If
@@ -1482,10 +1382,7 @@ Private Function LLMChat(prompt As String, _
         preamble = GetDefaultPreamble()
     End If
 
-    If provider = "openai" _
-            Or provider = "openrouter" _
-            Or provider = "mistralai" _
-            Then
+    If provider = "openai" Then
         LLMChat = LLMChatOpenAI(provider:=provider, _
                                 model:=model, _
                                 prompt:=prompt, _
@@ -1507,15 +1404,8 @@ Private Function LLMChat(prompt As String, _
                                   temperature:=temperature, _
                                   stop_word:=stop_word)
 
-    ElseIf provider = "cohere" Then
-        LLMChat = LLMChatCohere(model:=model, _
-                                prompt:=prompt, _
-                                preamble:=preamble, _
-                                temperature:=temperature, _
-                                stop_word:=stop_word)
-
     Else
-        Err.Raise vbObjectError + 1001, , "Wrong provider"
+        Err.Raise vbObjectError + 1001, , "Invalid provider"
     End If
 End Function
 
@@ -1921,105 +1811,6 @@ NoErrors:
     Next i
 
     LLMChatGoogleAI = response_json("candidates")(1)("content")("parts")(1)("text")
-End Function
-
-Private Function LLMChatCohere(model As String, _
-                               prompt As String, _
-                               preamble As String, _
-                               Optional temperature As Double = 0, _
-                               Optional stop_word As String) _
-                               As String
-    Dim base_url As String
-    base_url = "https://api.cohere.ai/v1/chat"
-
-#If IsWord Then
-    Dim payload As Scripting.Dictionary
-    Set payload = New Scripting.Dictionary
-#Else
-    Dim payload As Dictionary
-    Set payload = New Dictionary
-#End If
-
-    payload.Add "model", GetModelName(model, "cohere")
-    payload.Add "temperature", temperature
-    payload.Add "preamble", preamble
-    payload.Add "message", prompt
-
-    Dim stop_sequences As Collection
-
-    If Not IsEmpty(stop_word) And stop_word <> "" Then
-        Set stop_sequences = New Collection
-        stop_sequences.Add stop_word
-        payload.Add "stop_sequences", stop_sequences
-    End If
-
-    Dim request As String
-    request = ConvertToJson(payload)
-
-#If DeveloperMode Then
-    Debug.Print ">>>>>>>>>>>>"
-    Debug.Print "Provider:", "cohere"
-    Debug.Print "Base URL:", base_url
-    Debug.Print "Request:", request
-#End If
-
-    Dim http As WinHttp.WinHttpRequest
-    Set http = New WinHttpRequest
-
-    Dim timeout As Long
-    timeout = 60000  ' ms
-    http.SetTimeouts timeout, timeout, timeout, timeout
-
-    http.Open "POST", base_url
-    http.SetRequestHeader "Accept", "application/json"
-    http.SetRequestHeader "Content-Type", "application/json"
-    http.SetRequestHeader "Authorization", "Bearer " & GetAPIKey("cohere")
-
-    On Error GoTo ErrorHandler
-    http.Send request
-    On Error GoTo 0
-    GoTo NoErrors
-
-ErrorHandler:
-    On Error GoTo 0
-#If DeveloperMode Then
-    Debug.Print "HTTP Error:", Err.Description
-    Debug.Print "<<<<<<<<<<<<"
-#End If
-    Err.Raise vbObjectError + 1001, , _
-        "HTTP Error: " & Err.Description & ". Press 'End' and try again."
-
-NoErrors:
-    Dim response_str As String
-    response_str = http.ResponseText
-    response_str = DecodeText(response_str, "ISO-8859-1", "UTF-8")
-
-#If DeveloperMode Then
-    Debug.Print "Response:", response_str
-    Debug.Print "<<<<<<<<<<<<"
-#End If
-
-    Dim response_json As Object
-    Set response_json = ParseJson(response_str)
-
-    If http.status >= 300 Then
-        Dim i As Integer
-
-        For i = 0 To response_json.Count - 1
-            If response_json.keys()(i) = "message" Then
-                Err.Raise vbObjectError + 1001, , _
-                    "LLM service provider returned the error: " & _
-                    response_json("message") & ". Press 'End' and try again."
-            End If
-            If response_json.keys()(i) = "data" Then
-                Err.Raise vbObjectError + 1001, , _
-                    "LLM service provider returned the error: " & _
-                    response_json("data") & ". Press 'End' and try again."
-            End If
-        Next i
-    End If
-
-    LLMChatCohere = response_json("text")
 End Function
 
 ' #############################################################################

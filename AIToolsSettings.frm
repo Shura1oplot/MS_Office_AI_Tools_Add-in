@@ -17,9 +17,6 @@ Private Sub SaveButton_Click()
     SaveSetting "AI tools", "API Keys", "openai", Me.OpenAIAPIKeyTextBox.text
     SaveSetting "AI tools", "API Keys", "google", Me.GoogleAIAPIKeyTextBox.text
     SaveSetting "AI tools", "API Keys", "anthropic", Me.AnthropicAPIKeyTextBox.text
-    SaveSetting "AI tools", "API Keys", "openrouter", Me.OpenRouterAPIKeyTextBox.text
-    SaveSetting "AI tools", "API Keys", "mistralai", Me.MistralAIAPIKeyTextBox.text
-    SaveSetting "AI tools", "API Keys", "cohere", Me.CohereAPIKeyTextBox.text
     Me.Hide
 End Sub
 
