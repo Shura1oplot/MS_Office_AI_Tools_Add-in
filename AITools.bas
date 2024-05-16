@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-15+1
+' Version 2024-05-16+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -132,37 +132,34 @@ End Function
 
 Sub CorrectToStandardEnglish()
     Dim command As String
-    command = ("You are a spell checker. Correct the input text delimited by triple quotes ("""""") to standard English. " & _
-               "If the input text is in standard English, return it as it is. Preserve abbreviations and try to maintain " & _
-               "the text length. Pay close attention to the usage of articles and prepositions. Wrap the result text in " & _
-               "triple quotes ("""""") as well." & vbLf & vbLf & _
-               "# Input text:" & vbLf & _
-               """""""{{input}}""""""")
+    command = ("You are a professional linguist. Correct the input text between xml tags <input> and </input> to standard " & _
+               "English. If the input text is in standard English, return it as it is. Preserve abbreviations and try to " & _
+               "maintain the text length. Pay close attention to the usage of articles and prepositions. Wrap the result text in " & _
+               "xml tags <result> and </result>." & vbLf & vbLf & _
+               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0
 End Sub
 
 Sub CorrectToStandardEnglishBusiness()
     Dim command As String
-    command = ("You are a professional linguist. Rephrase the input text delimited by triple quotes ("""""") to standard " & _
+    command = ("You are a professional linguist. Rephrase the input text between xml tags <input> and </input> to standard " & _
                "English in a business style. If the input text is already in standard English and follows a business style, " & _
                "return it as it is. Preserve abbreviations and try to maintain the text length. Ensure the result is clear " & _
-               "and concise, with correct use of articles and prepositions. Wrap the rephrased text in triple quotes ("""""") " & _
-               "as well." & vbLf & vbLf & _
-               "# Input text:" & vbLf & _
-               """""""{{input}}""""""")
+               "and concise, with correct use of articles and prepositions. Wrap the rephrased text in xml tags <result> and " & _
+               "</result>." & vbLf & vbLf & _
+               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.1
 End Sub
 
 Sub ParaphraseShorten()
     Dim command As String
-    command = ("You are a professional linguist. Paraphrase the input text delimited by triple quotes ("""""") to reduce its " & _
+    command = ("You are a professional linguist. Paraphrase the input text between xml tags <input> and </input> to reduce its " & _
                "length by a quarter or half, while preserving its core meaning and key messages. Ensure the output is in " & _
-               "standard English, business style, and is clean and concise. Wrap the paraphrased text in triple quotes ("""""") " & _
-               "as well." & vbLf & vbLf & _
-               "# Input text:" & vbLf & _
-               """""""{{input}}""""""")
+               "standard English, business style, and is clean and concise. Wrap the paraphrased text in xml tags <result> and " & _
+               "</result>." & vbLf & vbLf & _
+               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.3
 End Sub
@@ -171,11 +168,10 @@ End Sub
 
 Sub RephraseConsultingZeroShot()
     Dim command As String
-    command = ("You are a professional linguist. Rephrase the input text delimited by triple quotes ("""""") using the style of " & _
+    command = ("You are a professional linguist. Rephrase the input text between xml tags <input> and </input> using the style of " & _
                "McKinsey's articles and presentations. Focus on maintaining clarity, precision, and a professional tone. " & _
-               "Wrap the rephrased text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "# Input text:" & vbLf & _
-               """""""{{input}}""""""")
+               "Wrap the rephrased text in xml tags <result> and </result>." & vbLf & vbLf & _
+               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.5
 End Sub
@@ -184,54 +180,84 @@ Sub RephraseConsultingMultiShot()
     Dim s As String
 
     s = ""
-    s = s & "You are a professional linguist. The following extracts were taken from a business presentation. Your task is to rephrase each extract in a style commonly used by top management "
-    s = s & "consulting firms like McKinsey, BCG, and Bain. Preserve the meaning and all key messages of the source extract. The length of the rephrased extract should be close to the length "
-    s = s & "of the source. Do not convert the extract to the format of the presentation title. " & vbLf
+    s = s & "You are a professional linguist. The following extracts were taken from a business presentation. Your task is to "
+    s = s & "rephrase each extract in a style commonly used by top management consulting firms like McKinsey, BCG, and Bain. "
+    s = s & "Preserve the meaning and all key messages of the source extract. The length of the rephrased extract should be "
+    s = s & "close to the length of the source. Do not convert the extract to the format of the presentation title. " & vbLf
     s = s & "" & vbLf
     s = s & "Guidelines for rephrasing:" & vbLf
     s = s & "- Use a professional, concise, and strategic tone." & vbLf
     s = s & "- Maintain clarity and precision in language." & vbLf
     s = s & "- Focus on conveying confidence and expertise." & vbLf
     s = s & "" & vbLf
-    s = s & "# Examples:" & vbLf
-    s = s & "SOURCE: """"""We conducted the benchmark exercise in 5 steps to select and study the most digitally advanced and the most relevant to CLIENT companies."""""" " & vbLf
-    s = s & "RESULT: """"""We have followed a five-tiered tailored approach to select and benchmark the most digitally advanced and significant companies in the world.""""""" & vbLf
+    s = s & "# Examples" & vbLf
+    s = s & "## Example 1:" & vbLf
+    s = s & "<source>We conducted the benchmark exercise in 5 steps to select and study the most digitally advanced "
+    s = s & "and the most relevant to CLIENT companies.</source>" & vbLf
+    s = s & "<result>We have followed a five-tiered tailored approach to select and benchmark the most digitally "
+    s = s & "advanced and significant companies in the world.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""We collected many open indexes and ratings from various sources to select the most relevant entities for the benchmarking."""""" " & vbLf
-    s = s & "RESULT: """"""To ensure accuracy in our benchmarking exercise, we made sure to select the entities based on the most significant global sources within the CLIENT's industry.""""""" & vbLf
+    s = s & "## Example 2:" & vbLf
+    s = s & "<source>We collected many open indexes and ratings from various sources to select the most relevant "
+    s = s & "entities for the benchmarking.</source>" & vbLf
+    s = s & "<result>To ensure accuracy in our benchmarking exercise, we made sure to select the entities based "
+    s = s & "on the most significant global sources within the CLIENT's industry.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""We studied national, sector-specific, and CLIENT's Corporate strategies to align the benchmarking with Saudi Arabia aspirations."""""" " & vbLf
-    s = s & "RESULT: """"""We rigorously aligned our criteria with national, sector-specific, and CLIENT's key performance indicators (KPIs) and strategic aspirations.""""""" & vbLf
+    s = s & "## Example 3:" & vbLf
+    s = s & "<source>We studied national, sector-specific, and CLIENT's Corporate strategies to align the benchmarking "
+    s = s & "with Saudi Arabia aspirations.</source>" & vbLf
+    s = s & "<result>We rigorously aligned our criteria with national, sector-specific, and CLIENT's key performance "
+    s = s & "indicators (KPIs) and strategic aspirations.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""To focus on the most relevant benchmarking candidates we screened the long list of 100+ companies using two filters: its specialization and annual operations throughput."""""" " & vbLf
-    s = s & "RESULT: """"""We focused our screening criteria on assessing a list of over 100 ports based on two strategic key pillars: specialization and size of business.""""""" & vbLf
+    s = s & "## Example 4:" & vbLf
+    s = s & "<source>To focus on the most relevant benchmarking candidates we screened the long list of 100+ companies "
+    s = s & "using two filters: its specialization and annual operations throughput.</source>" & vbLf
+    s = s & "<result>We focused our screening criteria on assessing a list of over 100 ports based on two strategic "
+    s = s & "key pillars: specialization and size of business.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""Container ports were selected for the benchmarking as this type of cargo is in the focus of the national and sector-specific strategies."""""" " & vbLf
-    s = s & "RESULT: """"""'Containers' present promising growth opportunities for CLIENT and is a key focus area for the national and sector-specific strategies.""""""" & vbLf
+    s = s & "## Example 5:" & vbLf
+    s = s & "<source>Container ports were selected for the benchmarking as this type of cargo is in the focus of "
+    s = s & "the national and sector-specific strategies.</source>" & vbLf
+    s = s & "<result>'Containers' present promising growth opportunities for CLIENT and is a key focus area for "
+    s = s & "the national and sector-specific strategies.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""Based on CLIENT’s and sectoral KPIs we defined selection criteria and developed a scoring model to select 5 target entities for the benchmarking exercise."""""" " & vbLf
-    s = s & "RESULT: """"""We developed a scoring model that factored in national, sectorial and organizational KPIs and aspirations to shortlist 5 entities for benchmarking.""""""" & vbLf
+    s = s & "## Example 6:" & vbLf
+    s = s & "<source>Based on CLIENT’s and sectoral KPIs we defined selection criteria and developed a scoring "
+    s = s & "model to select 5 target entities for the benchmarking exercise.</source>" & vbLf
+    s = s & "<result>We developed a scoring model that factored in national, sectorial and organizational KPIs "
+    s = s & "and aspirations to shortlist 5 entities for benchmarking.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""Based on 6 selection criteria we defined 10 numeric parameters for our scoring model, which rules are based on current and target CLIENT’s and sectoral KPIs."""""" " & vbLf
-    s = s & "RESULT: """"""Our approach involved leveraging those KPIs as the foundation of our model, while implementing a scoring mechanism that encompasses additional factors.""""""" & vbLf
+    s = s & "## Example 7:" & vbLf
+    s = s & "<source>Based on 6 selection criteria we defined 10 numeric parameters for our scoring model, which "
+    s = s & "rules are based on current and target CLIENT’s and sectoral KPIs.</source>" & vbLf
+    s = s & "<result>Our approach involved leveraging those KPIs as the foundation of our model, while implementing "
+    s = s & "a scoring mechanism that encompasses additional factors.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""Finally, 5 entities were selected for the benchmarking exercise: 4 with the highest score points, and one additional as the closest competitor of CLIENT in the Middle East."""""" " & vbLf
-    s = s & "RESULT: """"""Five ports are strategically selected including the top-performing four companies as per our model, as well as the closest regional competitor.""""""" & vbLf
+    s = s & "## Example 8:" & vbLf
+    s = s & "<source>Finally, 5 entities were selected for the benchmarking exercise: 4 with the highest score points, "
+    s = s & "and one additional as the closest competitor of CLIENT in the Middle East.</source>" & vbLf
+    s = s & "<result>Five ports are strategically selected including the top-performing four companies as per our model, "
+    s = s & "as well as the closest regional competitor.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""The benchmarking will focus on analysis of digitalization experience of port authorities and port regulators in alignment with CLIENT’s operating model."""""" " & vbLf
-    s = s & "RESULT: """"""To ensure our analysis is aligned with CLIENT’s current and future strategic plans, we will tailor our assessment to focus on key roles in the supply chain.""""""" & vbLf
+    s = s & "## Example 9:" & vbLf
+    s = s & "<source>The benchmarking will focus on analysis of digitalization experience of port authorities and "
+    s = s & "port regulators in alignment with CLIENT’s operating model.</source>" & vbLf
+    s = s & "<result>To ensure our analysis is aligned with CLIENT’s current and future strategic plans, we will "
+    s = s & "tailor our assessment to focus on key roles in the supply chain.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "SOURCE: """"""For a comprehensive benchmarking exercise, six dimensions were defined for the benchmarking to address important questions of the CLIENT’s Digital Strategy."""""" " & vbLf
-    s = s & "RESULT: """"""To ensure our benchmarking exercise is consistent with the current state, we have defined six critical dimensions that will significantly impact CLIENT’s digital future.""""""" & vbLf
+    s = s & "## Example 10:" & vbLf
+    s = s & "<source>For a comprehensive benchmarking exercise, six dimensions were defined for the benchmarking "
+    s = s & "to address important questions of the CLIENT’s Digital Strategy.</source>" & vbLf
+    s = s & "<result>To ensure our benchmarking exercise is consistent with the current state, we have defined "
+    s = s & "six critical dimensions that will significantly impact CLIENT’s digital future.</result>" & vbLf
     s = s & "" & vbLf
     s = s & "# Your task:" & vbLf
-    s = s & "SOURCE: """"""{{Your input text here}}""""""" & vbLf
+    s = s & "<source>{{input}}</source>" & vbLf
     s = s & "" & vbLf
-    s = s & "Do not repeat the source text, write only the rephrased extract starting with ""RESULT:""."
+    s = s & "Do not repeat the source text, write only the rephrased extract wrapped with <result> and </result> xml tags."
 
     TransformSelection command:=s, _
-                       temperature:=0.5, _
-                       remove_prefix:="RESULT:"
+                       temperature:=0.5
 End Sub
 
 #End If
@@ -242,12 +268,11 @@ Sub RephrasePoliteConcise()
     Dim command As String
 
     command = ("You are a professional linguist." & _
-               "Rewrite the input message delimited by triple quotes ("""""") to be more indirect, polite, delicate, " & _
+               "Rewrite the input message between xml tags <input> and </input> to be more indirect, polite, delicate, " & _
                "and considerate. Keep it concise and suitable for executive-level management. Consider cultural " & _
                "sensibilities and professional etiquette common in Arab and European contexts, maintaining the original " & _
-               "message's intent. Wrap the result text in triple quotes ("""""") as well." & vbLf & vbLf & _
-               "# Input text:" & vbLf & _
-               """""""{{input}}""""""")
+               "message's intent. Wrap the result text xml tags <result> and </result>." & vbLf & vbLf & _
+               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.2
 End Sub
@@ -256,13 +281,12 @@ Sub RephrasePoliteExtra()
     Dim command As String
 
     command = ("You are a professional linguist." & _
-               "Take the input message delimited by triple quotes ("""""") and rewrite it to be more indirect, polite, " & _
+               "Take the input message between xml tags <input> and </input> and rewrite it to be more indirect, polite, " & _
                "delicate, and considerate. Emphasize readiness to collaborate and show respect for the recipient's time " & _
                "and efforts where suitable. Consider cultural sensibilities and professional etiquette common in Arab and " & _
-               "European contexts, maintaining the original message's intent. Wrap the result text in triple quotes " & _
-               "("""""") as well." & vbLf & vbLf & _
-               "# Input text:" & vbLf & _
-               """""""{{input}}""""""")
+               "European contexts, maintaining the original message's intent. Wrap the result text in xml tags <result> and " & _
+               "</result>." & vbLf & vbLf & _
+               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.2, _
                        correct_punctuation:=True
@@ -312,9 +336,7 @@ Sub RunAI()
                             source:=source, _
                             temperature:=temperature)
 
-    If StartsWith(result, """""""") And EndsWith(result, """""""") Then
-        result = RemoveSuffix(RemovePrefix(result, """"""""), """""""")
-    End If
+    result = TryExtractXMLTags(result)
 
     resultShape.TextFrame.TextRange.text = result
 End Sub
@@ -530,12 +552,12 @@ Begin:  ' ##################
     text = Trim_(text)
 
     With AIToolsOutput
-        .Tag = ""
+        .tag = ""
         .TextBoxOutput.text = text
         .Show  ' Blocking
         result = ""
         On Error Resume Next
-        result = .Tag
+        result = .tag
         On Error GoTo 0
     End With
 
@@ -609,9 +631,11 @@ Function AI(mode As Integer, _
 
     guidance = _
         ("You are a VBA User Defined Function (UDF) in Excel. A user will provide you with an input table " & _
-         "and a request, command, or question. Respond precisely and concisely, without making up facts or " & _
+         "and a request, command, or question between <input> and </input> xml tags. " & _
+         "Respond precisely and concisely, without making up facts or " & _
          "seeking further clarifications. Format your response as a table with each line as a row and columns " & _
-         "separated by a vertical bar (|). Do not repeat the user's input. Use business language unless " & _
+         "separated by a vertical bar (|). Whap the output table with <result> and </result> xml tags. " & _
+         "Do not repeat the user's input. Use business language unless " & _
          "otherwise stated." & vbLf & vbLf)
 
     If mode = 1 Then
@@ -621,73 +645,77 @@ Function AI(mode As Integer, _
                    "table. Your should output only new rows of this table." & vbLf & vbLf)
 
         guidance = guidance & _
-                  ("Example 1" & vbLf & _
-                   "---------" & vbLf & vbLf & _
-                   "User:" & vbLf & _
+                  ("# Example 1" & vbLf & _
+                   "<input>" & vbLf & _
                    "|List the last 5 Olympic champions in figure skating|||" & vbLf & _
                    "|Name|Year|Country|" & vbLf & vbLf & _
-                   "Assistant:" & vbLf & _
+                   "</input>" & vbLf & _
+                   "<result>" & vbLf & _
                    "|Yuzuru Hanyu|2014|Japan|" & vbLf & _
                    "|Evan Lysacek|2010|United States|" & vbLf & _
                    "|Evgeni Plushenko|2006|Russia|" & vbLf & _
-                   "|Alexei Yagudin|2002|Russia|")
+                   "|Alexei Yagudin|2002|Russia|" & vbLf & _
+                   "</result>")
 
         guidance = guidance & vbLf & vbLf & vbLf
 
         guidance = guidance & _
-                  ("Example 2" & vbLf & _
-                   "---------" & vbLf & vbLf & _
-                   "User:" & vbLf & _
+                  ("# Example 2" & vbLf & _
+                   "<input>" & vbLf & _
                    "|List the last 5 US presidents|" & vbLf & vbLf & _
-                   "Assistant:" & vbLf & _
+                   "</input>" & vbLf & _
+                   "<result>" & vbLf & _
                    "|Joe Biden|" & vbLf & _
                    "|Donald Trump|" & vbLf & _
                    "|Barack Obama|" & vbLf & _
                    "|George W. Bush|" & vbLf & _
-                   "|Bill Clinton|")
+                   "|Bill Clinton|" & vbLf & _
+                   "</result>")
 
         command = RangeToText(input_data)
 
     ElseIf mode = 2 Then
         guidance = guidance & _
                   ("You should fill missing values (marked as '?' in the input table). " & _
-                   "Replace '?' with appropriate values and write updated table. " & _
+                   "Replace '?' with appropriate values and write an updated table. " & _
                    "User's input formated as a Markdown table. " & _
                    "Do not repeat the instructions provided, output only an updated table with the " & _
                    "header row if available." & vbLf & vbLf)
 
         guidance = guidance & _
-                  ("Example 1" & vbLf & _
-                   "---------" & vbLf & vbLf & _
-                   "User:" & vbLf & _
+                  ("# Example 1" & vbLf & _
+                   "<input>" & vbLf & _
                    "Capitals of countries and currencies (codes)" & vbLf & _
                    "|Country|Capital|Currency|" & vbLf & _
                    "|Italy|?|?|" & vbLf & _
                    "|UAE|?|?|" & vbLf & _
                    "|USA|?|?|" & vbLf & vbLf & _
-                   "Assistant:" & vbLf & _
+                   "</input>" & vbLf & _
+                   "<result>" & vbLf & _
                    "|Country|Capital|Currency|" & _
                    "|Italy|Rome|EUR|" & vbLf & _
                    "|UAE|Abu Dhabi|AED|" & vbLf & _
-                   "|USA|Washington, D.C.|USD|")
+                   "|USA|Washington, D.C.|USD|" & vbLf & _
+                   "</result>")
 
         guidance = guidance & _
-                  ("Example 2" & vbLf & _
-                   "---------" & vbLf & vbLf & _
-                   "User:" & vbLf & _
+                  ("# Example 2" & vbLf & _
+                   "<input>" & vbLf & _
                    "|Full name|Gender|" & vbLf & _
                    "|Emily Johnson|Female|" & vbLf & _
                    "|David Martinez|Male|" & vbLf & vbLf & _
                    "|Aisha Patel|?|" & vbLf & _
                    "|Thomas Brown|?|" & vbLf & _
                    "|Yuki Tanaka|?|" & vbLf & vbLf & _
-                   "Assistant:" & vbLf & _
+                   "</input>" & vbLf & _
+                   "<result>" & vbLf & _
                    "|Full name|Gender|" & vbLf & _
                    "|Emily Johnson|Female|" & vbLf & _
                    "|David Martinez|Male|" & vbLf & vbLf & _
                    "|Aisha Patel|Female|" & vbLf & _
                    "|Thomas Brown|Male|" & vbLf & _
-                   "|Yuki Tanaka|Female|")
+                   "|Yuki Tanaka|Female|" & vbLf & _
+                   "</result>")
 
         guidance = guidance & vbLf & vbLf & _
                    ("Due to the limitation of the macro, do not output Markdown header delimiter (e.g., |---|---|).")
@@ -710,8 +738,7 @@ Function AI(mode As Integer, _
                                command:=command, _
                                preamble:=guidance, _
                                temperature:=0, _
-                               correct_punctuation:=False, _
-                               extract_tripple_quotes:=False)
+                               correct_punctuation:=False)
 
         result = Trim_(result)
         result = Replace(result, vbCr, "")
@@ -995,11 +1022,9 @@ Private Sub TransformSelection(command As String, _
                                Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
-                               Optional extract_tripple_quotes As Boolean = True, _
                                Optional anonymize_client As String, _
                                Optional stop_word As String, _
-                               Optional model As String, _
-                               Optional remove_prefix As String)
+                               Optional model As String)
     Dim tr As TextRange
     Dim source As String
     Dim result As String
@@ -1044,11 +1069,9 @@ Private Sub TransformSelection(command As String, _
                                preamble:=preamble, _
                                temperature:=temperature, _
                                correct_punctuation:=correct_punctuation, _
-                               extract_tripple_quotes:=extract_tripple_quotes, _
                                anonymize_client:=anonymize_client, _
                                stop_word:=stop_word, _
-                               model:=model, _
-                               remove_prefix:=remove_prefix)
+                               model:=model)
 
         If Not IsEmpty(result) And result <> "" Then
             .text = result
@@ -1064,11 +1087,9 @@ Private Sub TransformSelection(command As String, _
                                Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
-                               Optional extract_tripple_quotes As Boolean = True, _
                                Optional anonymize_client As String, _
                                Optional stop_word As String, _
-                               Optional model As String, _
-                               Optional remove_prefix As String)
+                               Optional model As String)
     Dim source As String
     Dim result As String
 
@@ -1104,11 +1125,9 @@ Private Sub TransformSelection(command As String, _
                                preamble:=preamble, _
                                temperature:=temperature, _
                                correct_punctuation:=correct_punctuation, _
-                               extract_tripple_quotes:=extract_tripple_quotes, _
                                anonymize_client:=anonymize_client, _
                                stop_word:=stop_word, _
-                               model:=model, _
-                               remove_prefix:=remove_prefix)
+                               model:=model)
 
         If Not IsEmpty(result) And Trim_(result) <> Trim_(source) Then
             result = RTrim_(result)
@@ -1130,11 +1149,9 @@ Private Sub TransformSelection(command As String, _
                                Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
-                               Optional extract_tripple_quotes As Boolean = True, _
                                Optional anonymize_client As String, _
                                Optional stop_word As String, _
-                               Optional model As String, _
-                               Optional remove_prefix As String)
+                               Optional model As String)
     Dim source As String
     Dim result As String
     Dim addr As String
@@ -1167,11 +1184,9 @@ Private Sub TransformSelection(command As String, _
                                preamble:=preamble, _
                                temperature:=temperature, _
                                correct_punctuation:=correct_punctuation, _
-                               extract_tripple_quotes:=extract_tripple_quotes, _
                                anonymize_client:=anonymize_client, _
                                stop_word:=stop_word, _
-                               model:=model, _
-                               remove_prefix:=remove_prefix)
+                               model:=model)
     End With
 
     If IsEmpty(result) Or result = "" Then
@@ -1183,7 +1198,7 @@ Private Sub TransformSelection(command As String, _
     End If
 
     With AIToolsExcel
-        .Tag = addr
+        .tag = addr
         .TextBoxInput.text = source
         .TextBoxOutput.text = result
         .Show
@@ -1199,11 +1214,9 @@ Private Function TransformText(ByVal source As String, _
                                Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
-                               Optional extract_tripple_quotes As Boolean = True, _
                                Optional anonymize_client As String, _
                                Optional stop_word As String, _
-                               Optional model As String, _
-                               Optional remove_prefix As String) _
+                               Optional model As String) _
                                As String
     Dim result As String
     Dim c As String
@@ -1246,16 +1259,7 @@ Private Function TransformText(ByVal source As String, _
     End If
 
     If Not IsEmpty(result) And result <> "" Then
-        If extract_tripple_quotes Then
-            a = InStr(result, """""""")
-            b = InStrRev(result, """""""")
-
-            If a > 0 And b > 0 And a <> b Then
-                result = Mid(result, a + 3, Len(result) - a - 2)
-                result = Left(result, InStr(result, """""""") - 1)
-                result = Trim_(result)
-            End If
-        End If
+        result = TryExtractXMLTags(result)
 
         If correct_punctuation And full_stop_added Then
             If Right(result, 1) = "." Then
@@ -1272,19 +1276,11 @@ Private Function TransformText(ByVal source As String, _
         result = Replace(result, "[Client]", anonymize_client)
     End If
 
-    If Not IsEmpty(remove_prefix) And remove_prefix <> "" Then
-        If Len(result) > Len(remove_prefix) And Left(result, Len(remove_prefix)) = remove_prefix Then
-            result = Right(result, Len(result) - Len(remove_prefix))
-        End If
-    End If
-
     If source = Trim(source) And result <> Trim(result) Then
         result = Trim(result)
     End If
 
-    If StartsWith(result, """""""") And EndsWith(result, """""""") Then
-        result = RemoveSuffix(RemovePrefix(result, """"""""), """""""")
-    End If
+    result = TryExtractXMLTags(result)
 
     ' Chr(34) -> "
     If Len(result) >= 2 And Right(result, 1) = Chr(34) And Left(result, 1) = Chr(34) Then
@@ -1315,12 +1311,14 @@ Private Function LLMTextCommand(ByVal command As String, _
         If Not IsEmpty(placeholder) And placeholder <> "" And InStr(command, placeholder) > 0 Then
             prompt = Replace(command, placeholder, source)
         Else
-            prompt = ("You are given instructions and input text delimited by triple quotes (""""""). " & _
-                      "Apply the instructions to the input text and write the result." & vbLf & vbLf & vbLf & _
+            prompt = ("You are given instructions between <instructions> and </instructions> xml tags " & _
+                      "and input text between <input> and </input> xml tags. " & _
+                      "Apply the instructions to the input text and write the result wrapped by <result> " & _
+                      "and </result> xml tags." & vbLf & vbLf & vbLf & _
                       "# Instructions" & vbLf & _
-                      command & vbLf & vbLf & vbLf & _
+                      "<instructions>" & vbLf & command & vbLf & "</instructions>" & vbLf & vbLf & _
                       "# Input text" & vbLf & _
-                      """""""" & source & """""""")
+                      "<input>" & vbLf & source & vbLf & "</input>")
         End If
     End If
 
@@ -1839,14 +1837,14 @@ Private Function LTrim_(s As String) As String
 
     Do While Len(s) > 0
         c = Left(s, 1)
-        
+
         If c = Chr(10) Or c = Chr(13) Or c = " " Or c = Chr(9) Then
             s = Right(s, Len(s) - 1)
         Else
             Exit Do
         End If
     Loop
-    
+
     LTrim_ = s
 End Function
 
@@ -1857,14 +1855,14 @@ Private Function RTrim_(s As String) As String
 
     Do While Len(s) > 0
         c = Right(s, 1)
-        
+
         If c = Chr(10) Or c = Chr(13) Or c = " " Or c = Chr(9) Then
             s = Left(s, Len(s) - 1)
         Else
             Exit Do
         End If
     Loop
-    
+
     RTrim_ = s
 End Function
 
@@ -1877,7 +1875,7 @@ Private Function StartsWith(str As String, prefix As String) As Boolean
         StartsWith = False
         Exit Function
     End If
-    
+
     StartsWith = Left(str, Len(prefix)) = prefix
 End Function
 
@@ -1886,7 +1884,7 @@ Private Function EndsWith(str As String, suffix As String) As Boolean
         EndsWith = False
         Exit Function
     End If
-    
+
     EndsWith = Right(str, Len(suffix)) = suffix
 End Function
 
@@ -1895,7 +1893,7 @@ Private Function RemovePrefix(str As String, prefix As String) As String
         RemovePrefix = str
         Exit Function
     End If
-    
+
     RemovePrefix = Right(str, Len(str) - Len(prefix))
 End Function
 
@@ -1904,8 +1902,27 @@ Private Function RemoveSuffix(str As String, suffix As String) As String
         RemoveSuffix = str
         Exit Function
     End If
-    
+
     RemoveSuffix = Left(str, Len(str) - Len(suffix))
+End Function
+
+Private Function TryExtractXMLTags(text As String, _
+                                  Optional tag As String = "result") _
+                                  As String
+    Dim x As Long
+    Dim s As String
+
+    x = InStr(text, "<" & tag & ">")
+
+    If x > 0 And InStrRev(text, "</" & tag & ">") > 0 Then
+        s = Mid(text, x + 2 + Len(tag), Len(text) - x - 1 - Len(tag))
+        s = Left(s, InStrRev(s, "</" & tag & ">") - 1)
+        s = Trim_(s)
+    Else
+        s = text
+    End If
+
+    TryExtractXMLTags = s
 End Function
 
 #If IsPowerPoint Then
