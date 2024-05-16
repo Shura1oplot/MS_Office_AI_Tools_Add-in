@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-16+1
+' Version 2024-05-16+2
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -552,12 +552,12 @@ Begin:  ' ##################
     text = Trim_(text)
 
     With AIToolsOutput
-        .tag = ""
+        .Tag = ""
         .TextBoxOutput.text = text
         .Show  ' Blocking
         result = ""
         On Error Resume Next
-        result = .tag
+        result = .Tag
         On Error GoTo 0
     End With
 
@@ -1198,7 +1198,7 @@ Private Sub TransformSelection(command As String, _
     End If
 
     With AIToolsExcel
-        .tag = addr
+        .Tag = addr
         .TextBoxInput.text = source
         .TextBoxOutput.text = result
         .Show
@@ -1888,35 +1888,17 @@ Private Function EndsWith(str As String, suffix As String) As Boolean
     EndsWith = Right(str, Len(suffix)) = suffix
 End Function
 
-Private Function RemovePrefix(str As String, prefix As String) As String
-    If Not StartsWith(str, prefix) Then
-        RemovePrefix = str
-        Exit Function
-    End If
-
-    RemovePrefix = Right(str, Len(str) - Len(prefix))
-End Function
-
-Private Function RemoveSuffix(str As String, suffix As String) As String
-    If Not EndsWith(str, suffix) Then
-        RemoveSuffix = str
-        Exit Function
-    End If
-
-    RemoveSuffix = Left(str, Len(str) - Len(suffix))
-End Function
-
 Private Function TryExtractXMLTags(text As String, _
-                                  Optional tag As String = "result") _
+                                  Optional XMLTag As String = "result") _
                                   As String
     Dim x As Long
     Dim s As String
 
-    x = InStr(text, "<" & tag & ">")
+    x = InStr(text, "<" & XMLTag & ">")
 
-    If x > 0 And InStrRev(text, "</" & tag & ">") > 0 Then
-        s = Mid(text, x + 2 + Len(tag), Len(text) - x - 1 - Len(tag))
-        s = Left(s, InStrRev(s, "</" & tag & ">") - 1)
+    If x > 0 And InStrRev(text, "</" & XMLTag & ">") > 0 Then
+        s = Mid(text, x + 2 + Len(Tag), Len(text) - x - 1 - Len(Tag))
+        s = Left(s, InStrRev(s, "</" & XMLTag & ">") - 1)
         s = Trim_(s)
     Else
         s = text
