@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-16+2
+' Version 2024-05-21+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -1889,15 +1889,15 @@ Private Function EndsWith(str As String, suffix As String) As Boolean
 End Function
 
 Private Function TryExtractXMLTags(text As String, _
-                                  Optional XMLTag As String = "result") _
-                                  As String
+                                   Optional XMLTag As String = "result") _
+                                   As String
     Dim x As Long
     Dim s As String
 
     x = InStr(text, "<" & XMLTag & ">")
 
     If x > 0 And InStrRev(text, "</" & XMLTag & ">") > 0 Then
-        s = Mid(text, x + 2 + Len(Tag), Len(text) - x - 1 - Len(Tag))
+        s = Mid(text, x + 2 + Len(XMLTag), Len(text) - x - 1 - Len(XMLTag))
         s = Left(s, InStrRev(s, "</" & XMLTag & ">") - 1)
         s = Trim_(s)
     Else
