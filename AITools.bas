@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-21+1
+' Version 2024-05-22+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -1236,6 +1236,9 @@ Private Function TransformText(ByVal source As String, _
            c <> "?" And _
            c <> "," And _
            c <> "%" And _
+           c <> ")" And _
+           c <> "]" And _
+           c <> "}" And _
            1 = 1 Then
             source = source & "."
             full_stop_added = True
