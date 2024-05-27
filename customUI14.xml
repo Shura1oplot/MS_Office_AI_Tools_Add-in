@@ -25,6 +25,13 @@
                             supertip="Paraphrase the selected text to make it shorter, but preserve its meaning. The revised variant will replace the original (selected) text."
                             size="large"
                             onAction="ParaphraseShortenButtonCallback" />
+                    <button id="CustomTransform1Button"
+                            label="Custom Transform"
+                            imageMso="MacroRun"
+                            screentip="Transform selected text using custom prompt"
+                            supertip="Transform selected text using the prompt defined in the Custom Transform settings. The output will replace the original (selected) text."
+                            size="large"
+                            onAction="CustomTransform1ButtonCallback" />
                 </group>
 
                 <group id="AIToolsTitlesGroup" label="Title Tools" getVisible="AIToolsTitlesGroupGetVisibleCallback">
@@ -96,13 +103,20 @@
                               enabled="false"
                               onAction="EnforceRnQComplianceCheckboxOnActionCallback"
                               getPressed="EnforceRnQComplianceCheckboxGetPressedCallback"/>
-                    <button id="SettingsButton"
-                            label="Settings"
-                            imageMso="ComAddInsDialog"
-                            screentip="Open settings window"
-                            supertip="Set up API Keys for external service providers (OpenAI, OpenRouter)."
+                    <button id="APIKeysButton"
+                            label="API Keys"
+                            imageMso="AdpPrimaryKey"
+                            screentip="Open API keys window"
+                            supertip="Set up your API Keys for external service providers (OpenAI, Anthropic, Google)."
                             size="normal"
-                            onAction="SettingsButtonCallback" />
+                            onAction="APIKeysButtonCallback" />
+                    <button id="CustomTransformSettingsButton"
+                            label="Custom Transform"
+                            imageMso="MenuMacros"
+                            screentip="Open custom transform settings window"
+                            supertip="Set prompt and temperature for the custom transform actions."
+                            size="normal"
+                            onAction="CustomTransformSettingsButtonCallback" />
                 </group>
             </tab>
         </tabs>

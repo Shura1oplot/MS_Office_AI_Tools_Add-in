@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-22+1
+' Version 2024-05-27+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -294,6 +294,15 @@ End Sub
 
 #End If
 
+Sub CustomTransform1()
+    Dim command As String
+    Dim temperature As Double
+    command = GetSetting("AI tools", "CustomTransform1", "Prompt", "{{input}}")
+    temperature = CDbl(GetSetting("AI tools", "CustomTransform1", "Temperature", "0"))
+    TransformSelection command:=command, _
+                       temperature:=temperature
+End Sub
+
 
 ' ==============================================================================
 ' Run AI for Playground
@@ -338,7 +347,7 @@ Sub RunAI()
 
     result = TryExtractXMLTags(result)
 
-    resultShape.TextFrame.TextRange.text = result
+    resultShape.TextFrame.TextRange.Text = result
 End Sub
 
 #End If
@@ -367,7 +376,7 @@ Sub RephraseTitleVariants()
     Dim status As String
     Dim timeout_counter As Integer
     ' Dim ts As Single
-    Dim text As String
+    Dim txt As String
     Dim i As Long
 
 #If IsWord Then
@@ -407,7 +416,7 @@ Sub RephraseTitleVariants()
         End If
     End With
 
-    source = tr.text
+    source = tr.Text
 
 Begin:  ' ##################
 
@@ -540,20 +549,20 @@ Begin:  ' ##################
         DoEvents
     Loop
 
-    text = "Orig: " + source + vbCr + vbCr
+    txt = "Orig: " + source + vbCr + vbCr
 
     For i = 1 To response_json("result")("output").Count
-        text = text + response_json("result")("output")(i)
-        text = text + vbCr
-        text = text + "By: " + response_json("result")("model")(i)
-        text = text + vbCr + vbCr + vbCr
+        txt = txt + response_json("result")("output")(i)
+        txt = txt + vbCr
+        txt = txt + "By: " + response_json("result")("model")(i)
+        txt = txt + vbCr + vbCr + vbCr
     Next i
 
-    text = Trim_(text)
+    txt = Trim_(txt)
 
     With AIToolsOutput
         .Tag = ""
-        .TextBoxOutput.text = text
+        .TextBoxOutput.Text = txt
         .Show  ' Blocking
         result = ""
         On Error Resume Next
@@ -562,7 +571,7 @@ Begin:  ' ##################
     End With
 
     If Not IsEmpty(result) And result <> "" Then
-        tr.text = result
+        tr.Text = result
     End If
 
     Exit Sub
@@ -820,14 +829,25 @@ End Sub
 ' Forms
 ' ==============================================================================
 
-Sub OpenSettings()
-    With AIToolsSettings
-        .OpenAIAPIKeyTextBox.text = _
+Sub OpenAPIKeysSettings()
+    With AIToolsAPIKeysSettings
+        .OpenAIAPIKeyTextBox.Text = _
             GetSetting("AI tools", "API Keys", "openai", "")
-        .GoogleAIAPIKeyTextBox.text = _
+        .GoogleAIAPIKeyTextBox.Text = _
             GetSetting("AI tools", "API Keys", "google", "")
-        .AnthropicAPIKeyTextBox.text = _
+        .AnthropicAPIKeyTextBox.Text = _
             GetSetting("AI tools", "API Keys", "anthropic", "")
+        .Show
+    End With
+End Sub
+
+
+Sub OpenCustomTransformSettings()
+    With AIToolsCustomTransformSettings
+        .PromptTextBox.Text = _
+            GetSetting("AI tools", "CustomTransform1", "Prompt", "{{input}}")
+        .TemperatureTextBox.Text = _
+            GetSetting("AI tools", "CustomTransform1", "Temperature", "0")
         .Show
     End With
 End Sub
@@ -898,6 +918,10 @@ Sub ParaphraseShortenButtonCallback(control As IRibbonControl)
     ParaphraseShorten
 End Sub
 
+Sub CustomTransform1ButtonCallback(control As IRibbonControl)
+    CustomTransform1
+End Sub
+
 #If IsPowerPoint Then
 
 Sub RephraseConsultingZeroShotButtonCallback(control As IRibbonControl)
@@ -922,8 +946,12 @@ End Sub
 
 #End If
 
-Sub SettingsButtonCallback(control As IRibbonControl)
-    OpenSettings
+Sub APIKeysButtonCallback(control As IRibbonControl)
+    OpenAPIKeysSettings
+End Sub
+
+Sub CustomTransformSettingsButtonCallback(control As IRibbonControl)
+    OpenCustomTransformSettings
 End Sub
 
 Sub EnforceRnQComplianceCheckboxOnActionCallback(control As IRibbonControl, _
@@ -1062,7 +1090,7 @@ Private Sub TransformSelection(command As String, _
     End With
 
     With tr
-        source = .text
+        source = .Text
 
         result = TransformText(source:=source, _
                                command:=command, _
@@ -1074,7 +1102,7 @@ Private Sub TransformSelection(command As String, _
                                model:=model)
 
         If Not IsEmpty(result) And result <> "" Then
-            .text = result
+            .Text = result
         End If
     End With
 End Sub
@@ -1106,7 +1134,7 @@ Private Sub TransformSelection(command As String, _
             Exit Sub
         End If
 
-        source = .text
+        source = .Text
 
         deselect_chars = 0
 
@@ -1134,7 +1162,7 @@ Private Sub TransformSelection(command As String, _
 
             If result <> "" Then
                 .MoveEnd Unit:=wdCharacter, Count:=-deselect_chars
-                .text = result
+                .Text = result
                 .MoveEnd Unit:=wdCharacter, Count:=deselect_chars
             End If
         End If
@@ -1177,7 +1205,7 @@ Private Sub TransformSelection(command As String, _
 
         addr = .Address(External:=True)
 
-        source = .Cells(1).text
+        source = .Cells(1).Text
 
         result = TransformText(source:=source, _
                                command:=command, _
@@ -1199,8 +1227,8 @@ Private Sub TransformSelection(command As String, _
 
     With AIToolsExcel
         .Tag = addr
-        .TextBoxInput.text = source
-        .TextBoxOutput.text = result
+        .TextBoxInput.Text = source
+        .TextBoxOutput.Text = result
         .Show
     End With
 End Sub
@@ -1816,7 +1844,7 @@ End Function
 
 ' #############################################################################
 
-Private Function DecodeText(ByVal text As String, _
+Private Function DecodeText(ByVal txt As String, _
                             ByVal fromCharset As String, _
                             ByVal toCharset As String) _
                             As String
@@ -1825,7 +1853,7 @@ Private Function DecodeText(ByVal text As String, _
         .mode = 3
         .Charset = fromCharset
         .Open
-        .WriteText text
+        .WriteText txt
         .Position = 0
         .Charset = toCharset
         DecodeText = .ReadText(-1)
@@ -1891,20 +1919,20 @@ Private Function EndsWith(str As String, suffix As String) As Boolean
     EndsWith = Right(str, Len(suffix)) = suffix
 End Function
 
-Private Function TryExtractXMLTags(text As String, _
+Private Function TryExtractXMLTags(Text As String, _
                                    Optional XMLTag As String = "result") _
                                    As String
     Dim x As Long
     Dim s As String
 
-    x = InStr(text, "<" & XMLTag & ">")
+    x = InStr(Text, "<" & XMLTag & ">")
 
-    If x > 0 And InStrRev(text, "</" & XMLTag & ">") > 0 Then
-        s = Mid(text, x + 2 + Len(XMLTag), Len(text) - x - 1 - Len(XMLTag))
+    If x > 0 And InStrRev(Text, "</" & XMLTag & ">") > 0 Then
+        s = Mid(Text, x + 2 + Len(XMLTag), Len(Text) - x - 1 - Len(XMLTag))
         s = Left(s, InStrRev(s, "</" & XMLTag & ">") - 1)
         s = Trim_(s)
     Else
-        s = text
+        s = Text
     End If
 
     TryExtractXMLTags = s
@@ -1913,7 +1941,7 @@ End Function
 #If IsPowerPoint Then
 
 Private Function GetText(s As Shape) As String
-    GetText = s.TextFrame.TextRange.text
+    GetText = s.TextFrame.TextRange.Text
 End Function
 
 #End If
