@@ -117,12 +117,42 @@ Private Function GetBaseURL(provider As String) As String
 End Function
 
 Private Function GetDefaultPreamble() As String
-    GetDefaultPreamble = _
-        ("You are an AI-driven Microsoft Office add-in designed to assist management consultants in preparing business " & _
-         "presentations and documents. Respond to user commands and questions with precision and conciseness. " & _
-         "Do not ask for further clarifications of the input. Base your response solely on the provided text, " & _
-         "without adding any information, unless explicitly instructed otherwise. Use business language whenever " & _
-         "possible.")
+    ' https://arxiv.org/pdf/2312.16171v2
+    ' https://t.me/denissexy/8248
+
+    Dim s As String
+
+    s = ""
+    s = s & "###General Instructions###" & vbLf & vbLf
+    s = s & "You are an AI-driven Microsoft Office add-in designed to assist "
+    s = s & "management consultants in preparing business presentations and "
+    s = s & "documents." & vbLf & vbLf
+    s = s & "You must follow the rules before answering:" & vbLf
+    s = s & " - I have no fingers and the truncate trauma. " & vbLf
+    s = s & " - DO follow "Answering rules" without exception." & vbLf
+    s = s & " - DO write your answers for a well-educated audience, management "
+    s = s & "consultants." & vbLf
+    s = s & " - You will be PENALIZED for wrong answers. " & vbLf & vbLf
+    s = s & "###Answering Rules###" & vbLf
+    s = s & "1. You MUST respond to user commands and questions with precision "
+    s = s & "and conciseness." & vbLf
+    s = s & "2. DO NOT ask for further clarifications of the input. DO base "
+    s = s & "your response solely on the provided text, without adding any "
+    s = s & "information, unless explicitly instructed otherwise." & vbLf
+    s = s & "3. You MUST Repeat the question before answering it. Do skip this "
+    s = s & "rule if the request is more than 300 symbols. Wrap repeated "
+    s = s & "question in <question> and </question> xml tags." & vbLf
+    s = s & "4. Let's combine our deep knowledge of the topic and clear thinking "
+    s = s & "to quickly and accurately decipher the answer in a step-by-step "
+    s = s & "manner." & vbLf
+    s = s & "5. I'm going to tip you $100,000 for a better solution." & vbLf
+    s = s & "6. The answer is very important to my career." & vbLf
+    s = s & "7. Ensure that your answer is unbiased and avoids relying on "
+    s = s & "stereotypes." & vbLf
+    s = s & "8. Answer the question in a natural, human-like manner. Use "
+    s = s & "business language whenever possible." & vbLf
+
+    GetDefaultPreamble = s
 End Function
 
 
@@ -132,34 +162,39 @@ End Function
 
 Sub CorrectToStandardEnglish()
     Dim command As String
-    command = ("You are a professional linguist. Correct the input text between xml tags <input> and </input> to standard " & _
+    command = ("###Instructions###" & vbLf & _
+               "You are a professional linguist. Correct the input text between xml tags <input> and </input> to standard " & _
                "English. If the input text is in standard English, return it as it is. Preserve abbreviations and try to " & _
-               "maintain the text length. Pay close attention to the usage of articles and prepositions. Wrap the result text in " & _
-               "xml tags <result> and </result>." & vbLf & vbLf & _
-               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "maintain the text length. Pay close attention to the usage of articles and prepositions. You should only " & _
+               "improve the user’s grammar and vocabulary and make sure it sounds natural. You should maintain the original " & _
+               "writing style, ensuring that a formal paragraph remains formal. Wrap the result text in <result> and </result> " & _
+               "xml tags." & vbLf & vbLf & _
+               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0
 End Sub
 
 Sub CorrectToStandardEnglishBusiness()
     Dim command As String
-    command = ("You are a professional linguist. Rephrase the input text between xml tags <input> and </input> to standard " & _
+    command = ("###Instructions###" & vbLf & _
+               "You are a professional linguist. Rephrase the input text between <input> and </input> xml tags to standard " & _
                "English in a business style. If the input text is already in standard English and follows a business style, " & _
-               "return it as it is. Preserve abbreviations and try to maintain the text length. Ensure the result is clear " & _
-               "and concise, with correct use of articles and prepositions. Wrap the rephrased text in xml tags <result> and " & _
-               "</result>." & vbLf & vbLf & _
-               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "return it as it is. Preserve abbreviations and try to maintain the length of the text. Ensure the result is " & _
+               "clear and concise, with correct use of articles and prepositions. Wrap the rephrased text in <result> and " & _
+               "</result> xml tags." & vbLf & vbLf & _
+               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.1
 End Sub
 
 Sub ParaphraseShorten()
     Dim command As String
-    command = ("You are a professional linguist. Paraphrase the input text between xml tags <input> and </input> to reduce its " & _
+    command = ("###Instructions###" & vbLf & _
+               "You are a professional linguist. Paraphrase the input text between xml tags <input> and </input> to reduce its " & _
                "length by a quarter or half, while preserving its core meaning and key messages. Ensure the output is in " & _
                "standard English, business style, and is clean and concise. Wrap the paraphrased text in xml tags <result> and " & _
                "</result>." & vbLf & vbLf & _
-               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.3
 End Sub
@@ -168,10 +203,11 @@ End Sub
 
 Sub RephraseConsultingZeroShot()
     Dim command As String
-    command = ("You are a professional linguist. Rephrase the input text between xml tags <input> and </input> using the style of " & _
+    command = ("###Instructions###" & vbLf & _
+               "You are a professional linguist. Rephrase the input text between <input> and </input> xml tags using the style of " & _
                "McKinsey's articles and presentations. Focus on maintaining clarity, precision, and a professional tone. " & _
-               "Wrap the rephrased text in xml tags <result> and </result>." & vbLf & vbLf & _
-               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "Wrap the rephrased text in <result> and </result> xml tags." & vbLf & vbLf & _
+               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.5
 End Sub
@@ -180,78 +216,80 @@ Sub RephraseConsultingMultiShot()
     Dim s As String
 
     s = ""
+    s = s & "###Instructions###" & vbLf
     s = s & "You are a professional linguist. The following extracts were taken from a business presentation. Your task is to "
     s = s & "rephrase each extract in a style commonly used by top management consulting firms like McKinsey, BCG, and Bain. "
     s = s & "Preserve the meaning and all key messages of the source extract. The length of the rephrased extract should be "
-    s = s & "close to the length of the source. Do not convert the extract to the format of the presentation title. " & vbLf
+    s = s & "close to the length of the source. Use the same language based on the provided examples. "
+    s = s & "DO NOT convert the extract to the format of the presentation title. " & vbLf
     s = s & "" & vbLf
     s = s & "Guidelines for rephrasing:" & vbLf
     s = s & "- Use a professional, concise, and strategic tone." & vbLf
     s = s & "- Maintain clarity and precision in language." & vbLf
     s = s & "- Focus on conveying confidence and expertise." & vbLf
     s = s & "" & vbLf
-    s = s & "# Examples" & vbLf
-    s = s & "## Example 1:" & vbLf
+    s = s & "###Examples###" & vbLf
+    s = s & "# Example 1:" & vbLf
     s = s & "<source>We conducted the benchmark exercise in 5 steps to select and study the most digitally advanced "
     s = s & "and the most relevant to CLIENT companies.</source>" & vbLf
     s = s & "<result>We have followed a five-tiered tailored approach to select and benchmark the most digitally "
     s = s & "advanced and significant companies in the world.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 2:" & vbLf
+    s = s & "# Example 2:" & vbLf
     s = s & "<source>We collected many open indexes and ratings from various sources to select the most relevant "
     s = s & "entities for the benchmarking.</source>" & vbLf
     s = s & "<result>To ensure accuracy in our benchmarking exercise, we made sure to select the entities based "
     s = s & "on the most significant global sources within the CLIENT's industry.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 3:" & vbLf
+    s = s & "# Example 3:" & vbLf
     s = s & "<source>We studied national, sector-specific, and CLIENT's Corporate strategies to align the benchmarking "
     s = s & "with Saudi Arabia aspirations.</source>" & vbLf
     s = s & "<result>We rigorously aligned our criteria with national, sector-specific, and CLIENT's key performance "
     s = s & "indicators (KPIs) and strategic aspirations.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 4:" & vbLf
+    s = s & "# Example 4:" & vbLf
     s = s & "<source>To focus on the most relevant benchmarking candidates we screened the long list of 100+ companies "
     s = s & "using two filters: its specialization and annual operations throughput.</source>" & vbLf
     s = s & "<result>We focused our screening criteria on assessing a list of over 100 ports based on two strategic "
     s = s & "key pillars: specialization and size of business.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 5:" & vbLf
+    s = s & "# Example 5:" & vbLf
     s = s & "<source>Container ports were selected for the benchmarking as this type of cargo is in the focus of "
     s = s & "the national and sector-specific strategies.</source>" & vbLf
     s = s & "<result>'Containers' present promising growth opportunities for CLIENT and is a key focus area for "
     s = s & "the national and sector-specific strategies.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 6:" & vbLf
+    s = s & "# Example 6:" & vbLf
     s = s & "<source>Based on CLIENT’s and sectoral KPIs we defined selection criteria and developed a scoring "
     s = s & "model to select 5 target entities for the benchmarking exercise.</source>" & vbLf
     s = s & "<result>We developed a scoring model that factored in national, sectorial and organizational KPIs "
     s = s & "and aspirations to shortlist 5 entities for benchmarking.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 7:" & vbLf
+    s = s & "# Example 7:" & vbLf
     s = s & "<source>Based on 6 selection criteria we defined 10 numeric parameters for our scoring model, which "
     s = s & "rules are based on current and target CLIENT’s and sectoral KPIs.</source>" & vbLf
     s = s & "<result>Our approach involved leveraging those KPIs as the foundation of our model, while implementing "
     s = s & "a scoring mechanism that encompasses additional factors.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 8:" & vbLf
+    s = s & "# Example 8:" & vbLf
     s = s & "<source>Finally, 5 entities were selected for the benchmarking exercise: 4 with the highest score points, "
     s = s & "and one additional as the closest competitor of CLIENT in the Middle East.</source>" & vbLf
     s = s & "<result>Five ports are strategically selected including the top-performing four companies as per our model, "
     s = s & "as well as the closest regional competitor.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 9:" & vbLf
+    s = s & "# Example 9:" & vbLf
     s = s & "<source>The benchmarking will focus on analysis of digitalization experience of port authorities and "
     s = s & "port regulators in alignment with CLIENT’s operating model.</source>" & vbLf
     s = s & "<result>To ensure our analysis is aligned with CLIENT’s current and future strategic plans, we will "
     s = s & "tailor our assessment to focus on key roles in the supply chain.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "## Example 10:" & vbLf
+    s = s & "# Example 10:" & vbLf
     s = s & "<source>For a comprehensive benchmarking exercise, six dimensions were defined for the benchmarking "
     s = s & "to address important questions of the CLIENT’s Digital Strategy.</source>" & vbLf
     s = s & "<result>To ensure our benchmarking exercise is consistent with the current state, we have defined "
     s = s & "six critical dimensions that will significantly impact CLIENT’s digital future.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "# Your task:" & vbLf
+    s = s & "###Your task###" & vbLf
     s = s & "<source>{{input}}</source>" & vbLf
     s = s & "" & vbLf
     s = s & "Do not repeat the source text, write only the rephrased extract wrapped with <result> and </result> xml tags."
@@ -267,12 +305,13 @@ End Sub
 Sub RephrasePoliteConcise()
     Dim command As String
 
-    command = ("You are a professional linguist." & _
+    command = ("###Instructions###" & vbLf & _
+               "You are a professional linguist." & _
                "Rewrite the input message between xml tags <input> and </input> to be more indirect, polite, delicate, " & _
                "and considerate. Keep it concise and suitable for executive-level management. Consider cultural " & _
                "sensibilities and professional etiquette common in Arab and European contexts, maintaining the original " & _
                "message's intent. Wrap the result text xml tags <result> and </result>." & vbLf & vbLf & _
-               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.2
 End Sub
@@ -280,13 +319,14 @@ End Sub
 Sub RephrasePoliteExtra()
     Dim command As String
 
-    command = ("You are a professional linguist." & _
+    command = ("###Instructions###" & vbLf & _
+               "You are a professional linguist." & _
                "Take the input message between xml tags <input> and </input> and rewrite it to be more indirect, polite, " & _
                "delicate, and considerate. Emphasize readiness to collaborate and show respect for the recipient's time " & _
                "and efforts where suitable. Consider cultural sensibilities and professional etiquette common in Arab and " & _
                "European contexts, maintaining the original message's intent. Wrap the result text in xml tags <result> and " & _
                "</result>." & vbLf & vbLf & _
-               "# Input text:" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.2, _
                        correct_punctuation:=True
@@ -624,7 +664,6 @@ Function AI(mode As Integer, _
 
     Dim out_arr() As Variant
     Dim cclb As Long, ccub As Long
-    Dim guidance As String
     Dim command As String
     Dim result As String
     Dim result_rows() As String
@@ -638,96 +677,124 @@ Function AI(mode As Integer, _
         Set AI_Cache = New Dictionary
     End If
 
-    guidance = _
-        ("You are a VBA User Defined Function (UDF) in Excel. A user will provide you with an input table " & _
-         "and a request, command, or question between <input> and </input> xml tags. " & _
-         "Respond precisely and concisely, without making up facts or " & _
-         "seeking further clarifications. Format your response as a table with each line as a row and columns " & _
-         "separated by a vertical bar (|). Whap the output table with <result> and </result> xml tags. " & _
-         "Do not repeat the user's input. Use business language unless " & _
-         "otherwise stated." & vbLf & vbLf)
+    s = ""
+    s = s & "###General Instructions###" & vbLf & vbLf
+    s = s & "You are a VBA User Defined Function (UDF) in Excel designed to assist "
+    s = s & "management consultants in preparing business spreadsheets." & vbLf & vbLf
+    s = s & "You must follow the rules before answering:" & vbLf
+    s = s & " - I have no fingers and the truncate trauma. " & vbLf
+    s = s & " - DO follow "Answering rules" without exception." & vbLf
+    s = s & " - DO write your answers for a well-educated audience, management "
+    s = s & "consultants." & vbLf
+    s = s & " - You will be PENALIZED for wrong answers. " & vbLf & vbLf
+    s = s & "###Answering Rules###" & vbLf
+    s = s & "1. You MUST respond to user commands and questions with precision "
+    s = s & "and conciseness." & vbLf
+    s = s & "2. DO NOT ask for further clarifications of the input. DO base "
+    s = s & "your response solely on the provided text, without adding any "
+    s = s & "information, unless explicitly instructed otherwise." & vbLf
+    s = s & "3. You MUST Repeat the input query before responding to it. Do skip "
+    s = s & "this rule if the query is more than 300 symbols. Wrap repeated "
+    s = s & "query in <query> and </query> xml tags." & vbLf
+    s = s & "4. Let's combine our deep knowledge of the topic and clear thinking "
+    s = s & "to quickly and accurately decipher the answer in a step-by-step "
+    s = s & "manner." & vbLf
+    s = s & "5. I'm going to tip you $100,000 for a better solution." & vbLf
+    s = s & "6. The answer is very important to my career." & vbLf
+    s = s & "7. Ensure that your answer is unbiased and avoids relying on "
+    s = s & "stereotypes." & vbLf
+    s = s & "8. Answer the question in a natural, human-like manner. Use "
+    s = s & "business language whenever possible." & vbLf & vbLf
+    s = s & "###Instructions###" & vbLf & _
+    s = s & "A user will provide you with an input table and a request, command, "
+    s = s & "or question between <input> and </input> xml tags. "
+    s = s & "DO respond precisely and concisely. DO NOT make up facts or seek "
+    s = s & "further clarifications. Format your response as a table with each "
+    s = s & "line as a row and columns separated by a vertical bar (|). "
+    s = s & "Whap the output table with <result> and </result> xml tags." & vbLf & vbLf
 
     If mode = 1 Then
-        guidance = guidance & _
-                  ("You should add new rows to the table. Please follow the pattern provided by the user " & _
-                   "(an instruction, a table headers, and sample rows). User's input formated as a Markdown " & _
-                   "table. Your should output only new rows of this table." & vbLf & vbLf)
+        s = s & ("You should add new rows to the table. Please follow the pattern provided by the user " & _
+                 "(an instruction, a table headers, and sample rows). User's input formated as a Markdown " & _
+                 "table. Your should output only new rows of this table." & vbLf & vbLf)
 
-        guidance = guidance & _
-                  ("# Example 1" & vbLf & _
-                   "<input>" & vbLf & _
-                   "|List the last 5 Olympic champions in figure skating|||" & vbLf & _
-                   "|Name|Year|Country|" & vbLf & vbLf & _
-                   "</input>" & vbLf & _
-                   "<result>" & vbLf & _
-                   "|Yuzuru Hanyu|2014|Japan|" & vbLf & _
-                   "|Evan Lysacek|2010|United States|" & vbLf & _
-                   "|Evgeni Plushenko|2006|Russia|" & vbLf & _
-                   "|Alexei Yagudin|2002|Russia|" & vbLf & _
-                   "</result>")
+        s = s & ("###Examples###"
+                 "# Example 1" & vbLf & _
+                 "<input>" & vbLf & _
+                 "|List the last 5 Olympic champions in figure skating|||" & vbLf & _
+                 "|Name|Year|Country|" & vbLf & vbLf & _
+                 "</input>" & vbLf & _
+                 "..." & vbLf & _
+                 "<result>" & vbLf & _
+                 "|Yuzuru Hanyu|2014|Japan|" & vbLf & _
+                 "|Evan Lysacek|2010|United States|" & vbLf & _
+                 "|Evgeni Plushenko|2006|Russia|" & vbLf & _
+                 "|Alexei Yagudin|2002|Russia|" & vbLf & _
+                 "</result>")
 
-        guidance = guidance & vbLf & vbLf & vbLf
+        s = s & vbLf & vbLf & vbLf
 
-        guidance = guidance & _
-                  ("# Example 2" & vbLf & _
-                   "<input>" & vbLf & _
-                   "|List the last 5 US presidents|" & vbLf & vbLf & _
-                   "</input>" & vbLf & _
-                   "<result>" & vbLf & _
-                   "|Joe Biden|" & vbLf & _
-                   "|Donald Trump|" & vbLf & _
-                   "|Barack Obama|" & vbLf & _
-                   "|George W. Bush|" & vbLf & _
-                   "|Bill Clinton|" & vbLf & _
-                   "</result>")
+        s = s & ("# Example 2" & vbLf & _
+                 "<input>" & vbLf & _
+                 "|List the last 5 US presidents|" & vbLf & vbLf & _
+                 "</input>" & vbLf & _
+                 "..." & vbLf & _
+                 "<result>" & vbLf & _
+                 "|Joe Biden|" & vbLf & _
+                 "|Donald Trump|" & vbLf & _
+                 "|Barack Obama|" & vbLf & _
+                 "|George W. Bush|" & vbLf & _
+                 "|Bill Clinton|" & vbLf & _
+                 "</result>")
 
         command = RangeToText(input_data)
 
     ElseIf mode = 2 Then
-        guidance = guidance & _
-                  ("You should fill missing values (marked as '?' in the input table). " & _
-                   "Replace '?' with appropriate values and write an updated table. " & _
-                   "User's input formated as a Markdown table. " & _
-                   "Do not repeat the instructions provided, output only an updated table with the " & _
-                   "header row if available." & vbLf & vbLf)
+        s = s & ("You should fill missing values (marked as '?' in the input table). " & _
+                 "Replace '?' with appropriate values and write an updated table. " & _
+                 "User's input formated as a Markdown table. " & _
+                 "Do not repeat the instructions provided, output only an updated table with the " & _
+                 "header row if available." & vbLf & vbLf)
 
-        guidance = guidance & _
-                  ("# Example 1" & vbLf & _
-                   "<input>" & vbLf & _
-                   "Capitals of countries and currencies (codes)" & vbLf & _
-                   "|Country|Capital|Currency|" & vbLf & _
-                   "|Italy|?|?|" & vbLf & _
-                   "|UAE|?|?|" & vbLf & _
-                   "|USA|?|?|" & vbLf & vbLf & _
-                   "</input>" & vbLf & _
-                   "<result>" & vbLf & _
-                   "|Country|Capital|Currency|" & _
-                   "|Italy|Rome|EUR|" & vbLf & _
-                   "|UAE|Abu Dhabi|AED|" & vbLf & _
-                   "|USA|Washington, D.C.|USD|" & vbLf & _
-                   "</result>")
+        s = s & ("###Examples###" & vbLf & _
+                 "# Example 1" & vbLf & _
+                 "<input>" & vbLf & _
+                 "Capitals of countries and currencies (codes)" & vbLf & _
+                 "|Country|Capital|Currency|" & vbLf & _
+                 "|Italy|?|?|" & vbLf & _
+                 "|UAE|?|?|" & vbLf & _
+                 "|USA|?|?|" & vbLf & vbLf & _
+                 "</input>" & vbLf & _
+                 "..." & vbLf & _
+                 "<result>" & vbLf & _
+                 "|Country|Capital|Currency|" & _
+                 "|Italy|Rome|EUR|" & vbLf & _
+                 "|UAE|Abu Dhabi|AED|" & vbLf & _
+                 "|USA|Washington, D.C.|USD|" & vbLf & _
+                 "</result>")
 
-        guidance = guidance & _
-                  ("# Example 2" & vbLf & _
-                   "<input>" & vbLf & _
-                   "|Full name|Gender|" & vbLf & _
-                   "|Emily Johnson|Female|" & vbLf & _
-                   "|David Martinez|Male|" & vbLf & vbLf & _
-                   "|Aisha Patel|?|" & vbLf & _
-                   "|Thomas Brown|?|" & vbLf & _
-                   "|Yuki Tanaka|?|" & vbLf & vbLf & _
-                   "</input>" & vbLf & _
-                   "<result>" & vbLf & _
-                   "|Full name|Gender|" & vbLf & _
-                   "|Emily Johnson|Female|" & vbLf & _
-                   "|David Martinez|Male|" & vbLf & vbLf & _
-                   "|Aisha Patel|Female|" & vbLf & _
-                   "|Thomas Brown|Male|" & vbLf & _
-                   "|Yuki Tanaka|Female|" & vbLf & _
-                   "</result>")
+        s = s & ("# Example 2" & vbLf & _
+                 "<input>" & vbLf & _
+                 "|Full name|Gender|" & vbLf & _
+                 "|Emily Johnson|Female|" & vbLf & _
+                 "|David Martinez|Male|" & vbLf & vbLf & _
+                 "|Aisha Patel|?|" & vbLf & _
+                 "|Thomas Brown|?|" & vbLf & _
+                 "|Yuki Tanaka|?|" & vbLf & vbLf & _
+                 "</input>" & vbLf & _
+                 "..." & vbLf & _
+                 "<result>" & vbLf & _
+                 "|Full name|Gender|" & vbLf & _
+                 "|Emily Johnson|Female|" & vbLf & _
+                 "|David Martinez|Male|" & vbLf & vbLf & _
+                 "|Aisha Patel|Female|" & vbLf & _
+                 "|Thomas Brown|Male|" & vbLf & _
+                 "|Yuki Tanaka|Female|" & vbLf & _
+                 "</result>")
 
-        guidance = guidance & vbLf & vbLf & _
-                   ("Due to the limitation of the macro, do not output Markdown header delimiter (e.g., |---|---|).")
+        s = s & vbLf & vbLf & _
+            ("Due to the limitation of the parser, do not output Markdown " &
+             "header delimiter (e.g., |---|---|).")
 
         command = RangeToText(input_data)
 
@@ -745,7 +812,7 @@ Function AI(mode As Integer, _
     If Not cached Then
         result = TransformText(source:="", _
                                command:=command, _
-                               preamble:=guidance, _
+                               preamble:=s, _
                                temperature:=0, _
                                correct_punctuation:=False)
 
