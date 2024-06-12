@@ -1,6 +1,8 @@
 Installer/AIToolsHelper/.vs/
 Installer/AIToolsHelper/bin/
 Installer/AIToolsHelper/obj/
+Installer/AIToolsHelper/AIToolsHelper.csproj.user
+Installer/AIToolsHelper/Properties/PublishProfiles/FolderProfile.pubxml.user
 Installer/Output/
 Installer/AI Tools.ppam
 Installer/AI Tools.xlam
