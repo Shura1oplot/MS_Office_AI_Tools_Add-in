@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-05-27+1
+' Version 2024-06-12+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -123,7 +123,7 @@ Private Function GetDefaultPreamble() As String
     Dim s As String
 
     s = ""
-    s = s & "###General Instructions###" & vbLf & vbLf
+    s = s & "###GENERAL INSTRUCTIONS###" & vbLf & vbLf
     s = s & "You are an AI-driven Microsoft Office add-in designed to assist "
     s = s & "management consultants in preparing business presentations and "
     s = s & "documents." & vbLf & vbLf
@@ -132,15 +132,15 @@ Private Function GetDefaultPreamble() As String
     s = s & " - DO write your answers for a well-educated audience, management "
     s = s & "consultants." & vbLf
     s = s & " - You ALWAYS will be PENALIZED for wrong and low-effort answers." & vbLf & vbLf
-    s = s & " - ALWAYS follow "Answering rules."" & vbLf
-    s = s & "###Answering Rules###" & vbLf
+    s = s & " - ALWAYS follow ""ANSWERING RULES.""" & vbLf
+    s = s & "###ANSWERING RULES###" & vbLf
     s = s & "1. You MUST respond to user commands and questions with precision "
     s = s & "and conciseness." & vbLf
     s = s & "2. ONCE assign a real-world expert role to yourself before answering, "
-    s = s & "e.g., "I'll answer as a world-famous historical expert <detailed topic> "
-    s = s & "with <most prestigious LOCAL topic REAL award>" or "I'll answer as "
+    s = s & "e.g., ""I'll answer as a world-famous historical expert <detailed topic> "
+    s = s & "with <most prestigious LOCAL topic REAL award>"" Or ""I'll answer as "
     s = s & "a world-famous <specific science> expert in the <detailed topic> "
-    s = s & "with <most prestigious LOCAL topic award>" etc." & vbLf
+    s = s & "with <most prestigious LOCAL topic award>"" etc." & vbLf
     s = s & "3. DO NOT ask for further clarifications of the input. DO base "
     s = s & "your response solely on the provided text, without adding any "
     s = s & "information, unless explicitly instructed otherwise." & vbLf
@@ -167,39 +167,39 @@ End Function
 
 Sub CorrectToStandardEnglish()
     Dim command As String
-    command = ("###Instructions###" & vbLf & _
+    command = ("###INSTRUCTIONS###" & vbLf & _
                "You are a professional linguist. Correct the input text between xml tags <input> and </input> to standard " & _
                "English. If the input text is in standard English, return it as it is. Preserve abbreviations and try to " & _
                "maintain the text length. Pay close attention to the usage of articles and prepositions. You should only " & _
                "improve the user’s grammar and vocabulary and make sure it sounds natural. You should maintain the original " & _
                "writing style, ensuring that a formal paragraph remains formal. Wrap the result text in <result> and </result> " & _
                "xml tags." & vbLf & vbLf & _
-               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0
 End Sub
 
 Sub CorrectToStandardEnglishBusiness()
     Dim command As String
-    command = ("###Instructions###" & vbLf & _
+    command = ("###INSTRUCTIONS###" & vbLf & _
                "You are a professional linguist. Rephrase the input text between <input> and </input> xml tags to standard " & _
                "English in a business style. If the input text is already in standard English and follows a business style, " & _
                "return it as it is. Preserve abbreviations and try to maintain the length of the text. Ensure the result is " & _
                "clear and concise, with correct use of articles and prepositions. Wrap the rephrased text in <result> and " & _
                "</result> xml tags." & vbLf & vbLf & _
-               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.1
 End Sub
 
 Sub ParaphraseShorten()
     Dim command As String
-    command = ("###Instructions###" & vbLf & _
+    command = ("###INSTRUCTIONS###" & vbLf & _
                "You are a professional linguist. Paraphrase the input text between xml tags <input> and </input> to reduce its " & _
                "length by a quarter or half, while preserving its core meaning and key messages. Ensure the output is in " & _
                "standard English, business style, and is clean and concise. Wrap the paraphrased text in xml tags <result> and " & _
                "</result>." & vbLf & vbLf & _
-               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.3
 End Sub
@@ -208,11 +208,11 @@ End Sub
 
 Sub RephraseConsultingZeroShot()
     Dim command As String
-    command = ("###Instructions###" & vbLf & _
+    command = ("###INSTRUCTIONS###" & vbLf & _
                "You are a professional linguist. Rephrase the input text between <input> and </input> xml tags using the style of " & _
                "McKinsey's articles and presentations. Focus on maintaining clarity, precision, and a professional tone. " & _
                "Wrap the rephrased text in <result> and </result> xml tags." & vbLf & vbLf & _
-               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.5
 End Sub
@@ -221,7 +221,7 @@ Sub RephraseConsultingMultiShot()
     Dim s As String
 
     s = ""
-    s = s & "###Instructions###" & vbLf
+    s = s & "###INSTRUCTIONS###" & vbLf
     s = s & "You are a professional linguist. The following extracts were taken from a business presentation. Your task is to "
     s = s & "rephrase each extract in a style commonly used by top management consulting firms like McKinsey, BCG, and Bain. "
     s = s & "Preserve the meaning and all key messages of the source extract. The length of the rephrased extract should be "
@@ -233,7 +233,7 @@ Sub RephraseConsultingMultiShot()
     s = s & "- Maintain clarity and precision in language." & vbLf
     s = s & "- Focus on conveying confidence and expertise." & vbLf
     s = s & "" & vbLf
-    s = s & "###Examples###" & vbLf
+    s = s & "###EXAMPLES###" & vbLf
     s = s & "# Example 1:" & vbLf
     s = s & "<source>We conducted the benchmark exercise in 5 steps to select and study the most digitally advanced "
     s = s & "and the most relevant to CLIENT companies.</source>" & vbLf
@@ -294,7 +294,7 @@ Sub RephraseConsultingMultiShot()
     s = s & "<result>To ensure our benchmarking exercise is consistent with the current state, we have defined "
     s = s & "six critical dimensions that will significantly impact CLIENT’s digital future.</result>" & vbLf
     s = s & "" & vbLf
-    s = s & "###Your task###" & vbLf
+    s = s & "###TASK###" & vbLf
     s = s & "<source>{{input}}</source>" & vbLf
     s = s & "" & vbLf
     s = s & "Do not repeat the source text, write only the rephrased extract wrapped with <result> and </result> xml tags."
@@ -310,13 +310,13 @@ End Sub
 Sub RephrasePoliteConcise()
     Dim command As String
 
-    command = ("###Instructions###" & vbLf & _
+    command = ("###INSTRUCTIONS###" & vbLf & _
                "You are a professional linguist." & _
                "Rewrite the input message between xml tags <input> and </input> to be more indirect, polite, delicate, " & _
                "and considerate. Keep it concise and suitable for executive-level management. Consider cultural " & _
                "sensibilities and professional etiquette common in Arab and European contexts, maintaining the original " & _
                "message's intent. Wrap the result text xml tags <result> and </result>." & vbLf & vbLf & _
-               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.2
 End Sub
@@ -324,14 +324,14 @@ End Sub
 Sub RephrasePoliteExtra()
     Dim command As String
 
-    command = ("###Instructions###" & vbLf & _
+    command = ("###INSTRUCTIONS###" & vbLf & _
                "You are a professional linguist." & _
                "Take the input message between xml tags <input> and </input> and rewrite it to be more indirect, polite, " & _
                "delicate, and considerate. Emphasize readiness to collaborate and show respect for the recipient's time " & _
                "and efforts where suitable. Consider cultural sensibilities and professional etiquette common in Arab and " & _
                "European contexts, maintaining the original message's intent. Wrap the result text in xml tags <result> and " & _
                "</result>." & vbLf & vbLf & _
-               "###Input text###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
+               "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
     TransformSelection command:=command, _
                        temperature:=0.2, _
                        correct_punctuation:=True
@@ -655,7 +655,7 @@ End Sub
 #If DeveloperMode Then
 
 Sub ZTestAI()
-    AI 1, ActiveWindow.Selection
+    AI 2, ActiveWindow.Selection
 End Sub
 
 #End If
@@ -669,7 +669,6 @@ Function AI(mode As Integer, _
 
     Dim out_arr() As Variant
     Dim cclb As Long, ccub As Long
-    Dim command As String
     Dim result As String
     Dim result_rows() As String
     Dim cached As Boolean
@@ -683,7 +682,7 @@ Function AI(mode As Integer, _
     End If
 
     s = ""
-    s = s & "###General Instructions###" & vbLf & vbLf
+    s = s & "###GENERAL INSTRUCTIONS###" & vbLf & vbLf
     s = s & "You are a VBA User Defined Function (UDF) in Excel designed to assist "
     s = s & "management consultants in preparing business spreadsheets." & vbLf & vbLf
     s = s & "You must follow the rules before answering:" & vbLf
@@ -691,15 +690,15 @@ Function AI(mode As Integer, _
     s = s & " - DO write your answers for a well-educated audience, management "
     s = s & "consultants." & vbLf
     s = s & " - You ALWAYS will be PENALIZED for wrong and low-effort answers." & vbLf & vbLf
-    s = s & " - ALWAYS follow "Answering rules."" & vbLf
-    s = s & "###Answering Rules###" & vbLf
+    s = s & " - ALWAYS follow ""ANSWERING RULES.""" & vbLf
+    s = s & "###ANSWERING RULES###" & vbLf
     s = s & "1. You MUST respond to user commands and questions with precision "
     s = s & "and conciseness." & vbLf
     s = s & "2. ONCE assign a real-world expert role to yourself before answering, "
-    s = s & "e.g., "I'll answer as a world-famous historical expert <detailed topic> "
-    s = s & "with <most prestigious LOCAL topic REAL award>" or "I'll answer as "
+    s = s & "e.g., ""I'll answer as a world-famous historical expert <detailed topic> "
+    s = s & "with <most prestigious LOCAL topic REAL award>"" Or ""I'll answer as "
     s = s & "a world-famous <specific science> expert in the <detailed topic> "
-    s = s & "with <most prestigious LOCAL topic award>" etc." & vbLf
+    s = s & "with <most prestigious LOCAL topic award>"" etc." & vbLf
     s = s & "3. DO NOT ask for further clarifications of the input. DO base "
     s = s & "your response solely on the provided text, without adding any "
     s = s & "information, unless explicitly instructed otherwise." & vbLf
@@ -715,7 +714,7 @@ Function AI(mode As Integer, _
     s = s & "stereotypes." & vbLf
     s = s & "9. Answer the question in a natural, human-like manner. Use "
     s = s & "business language whenever possible." & vbLf & vbLf
-    s = s & "###Instructions###" & vbLf & _
+    s = s & "###INSTRUCTIONS###" & vbLf & _
     s = s & "A user will provide you with an input table and a request, command, "
     s = s & "or question between <input> and </input> xml tags. "
     s = s & "DO respond precisely and concisely. DO NOT make up facts or seek "
@@ -728,7 +727,7 @@ Function AI(mode As Integer, _
                  "(an instruction, a table headers, and sample rows). User's input formated as a Markdown " & _
                  "table. Your should output only new rows of this table." & vbLf & vbLf)
 
-        s = s & ("###Examples###"
+        s = s & ("###EXAMPLES###" & _
                  "# Example 1" & vbLf & _
                  "<input>" & vbLf & _
                  "|List the last 5 Olympic champions in figure skating|||" & vbLf & _
@@ -757,7 +756,11 @@ Function AI(mode As Integer, _
                  "|Bill Clinton|" & vbLf & _
                  "</result>")
 
-        command = RangeToText(input_data)
+        s = s & vbLf & vbLf & vbLf
+
+        s = s & "###TASK###" & vbLf & vbLf
+
+        s = s & RangeToText(input_data)
 
     ElseIf mode = 2 Then
         s = s & ("You should fill missing values (marked as '?' in the input table). " & _
@@ -766,7 +769,7 @@ Function AI(mode As Integer, _
                  "Do not repeat the instructions provided, output only an updated table with the " & _
                  "header row if available." & vbLf & vbLf)
 
-        s = s & ("###Examples###" & vbLf & _
+        s = s & ("###EXAMPLES###" & vbLf & _
                  "# Example 1" & vbLf & _
                  "<input>" & vbLf & _
                  "Capitals of countries and currencies (codes)" & vbLf & _
@@ -803,10 +806,14 @@ Function AI(mode As Integer, _
                  "</result>")
 
         s = s & vbLf & vbLf & _
-            ("Due to the limitation of the parser, do not output Markdown " &
+            ("Due to the limitation of the parser, do not output Markdown " & _
              "header delimiter (e.g., |---|---|).")
 
-        command = RangeToText(input_data)
+        s = s & vbLf & vbLf & vbLf
+
+        s = s & "###TASK###" & vbLf & vbLf
+
+        s = s & RangeToText(input_data)
 
     Else
         Err.Raise vbObjectError + 1001, , "Invalid mode: " & CStr(mode) & ". Should be 1 or 2."
@@ -815,24 +822,22 @@ Function AI(mode As Integer, _
 
     cached = False
 
-    If AI_Cache.Exists(command) Then
+    If AI_Cache.Exists(s) Then
         cached = True
     End If
 
     If Not cached Then
-        result = TransformText(source:="", _
-                               command:=command, _
-                               preamble:=s, _
+        result = TransformText(command:=s, _
                                temperature:=0, _
                                correct_punctuation:=False)
 
         result = Trim_(result)
         result = Replace(result, vbCr, "")
 
-        AI_Cache.Add command, result
+        AI_Cache.Add s, result
 
     Else
-        result = AI_Cache(command)
+        result = AI_Cache(s)
 
     End If
 
@@ -1314,8 +1319,8 @@ End Sub
 
 ' ##################################################################################################
 
-Private Function TransformText(ByVal source As String, _
-                               ByVal command As String, _
+Private Function TransformText(ByVal command As String, _
+                               Optional ByVal source As String = "", _
                                Optional preamble As String, _
                                Optional temperature As Double = 0, _
                                Optional correct_punctuation As Boolean = True, _
@@ -1401,7 +1406,7 @@ Private Function TransformText(ByVal source As String, _
 End Function
 
 Private Function LLMTextCommand(ByVal command As String, _
-                                ByVal source As String, _
+                                Optional ByVal source As String = "", _
                                 Optional preamble As String, _
                                 Optional temperature As Double = 0, _
                                 Optional model As String, _
@@ -1415,7 +1420,7 @@ Private Function LLMTextCommand(ByVal command As String, _
     command = Trim_(command)
     source = Trim_(source)
 
-    If command <> "" And source <> "" Then
+    If source <> "" Then
         If Not IsEmpty(placeholder) And placeholder <> "" And InStr(command, placeholder) > 0 Then
             prompt = Replace(command, placeholder, source)
         Else
@@ -1428,6 +1433,8 @@ Private Function LLMTextCommand(ByVal command As String, _
                       "# Input text" & vbLf & _
                       "<input>" & vbLf & source & vbLf & "</input>")
         End If
+    Else
+        prompt = command
     End If
 
     prompt = Trim_(prompt)

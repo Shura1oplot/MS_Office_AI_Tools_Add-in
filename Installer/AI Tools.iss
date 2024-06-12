@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "AI Tools"
-#define MyAppVersion "20240521-1"
+#define MyAppVersion "20240612-1"
 #define MyAppPublisher "Alexander Gordeev"
 
 [Setup]
@@ -32,7 +32,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Source: "AI Tools.ppam"; DestDir: "{userappdata}\Microsoft\AddIns"; Flags: ignoreversion
 Source: "AI Tools.xlam"; DestDir: "{userappdata}\Microsoft\AddIns"; Flags: ignoreversion
 Source: "AI Tools.dotm"; DestDir: "{userappdata}\Microsoft\Word\STARTUP"; Flags: ignoreversion
-Source: "AIToolsHelper.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "AIToolsHelper\bin\Release\net8.0\publish\win-x64\AIToolsHelper.exe"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Registry]
