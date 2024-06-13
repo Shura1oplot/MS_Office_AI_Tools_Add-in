@@ -95,7 +95,7 @@ Private Function GetModelName(model As String, _
     ' https://ai.google.dev/models/gemini
     ElseIf provider = "google" Then
         If model = "gemini" Or model = "gemini-pro" Or "gemini-pro-latest" Then
-            GetModelName = "gemini-1.0-pro-latest"
+            GetModelName = "gemini-1.5-pro"
         Else
             Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
@@ -171,7 +171,7 @@ Sub CorrectToStandardEnglish()
                "You are a professional linguist. Correct the input text between xml tags <input> and </input> to standard " & _
                "English. If the input text is in standard English, return it as it is. Preserve abbreviations and try to " & _
                "maintain the text length. Pay close attention to the usage of articles and prepositions. You should only " & _
-               "improve the user’s grammar and vocabulary and make sure it sounds natural. You should maintain the original " & _
+               "improve the userâ€™s grammar and vocabulary and make sure it sounds natural. You should maintain the original " & _
                "writing style, ensuring that a formal paragraph remains formal. Wrap the result text in <result> and </result> " & _
                "xml tags." & vbLf & vbLf & _
                "###TASK###" & vbLf & "<input>" & vbLf & "{{input}}" & vbLf & "</input>")
@@ -265,14 +265,14 @@ Sub RephraseConsultingMultiShot()
     s = s & "the national and sector-specific strategies.</result>" & vbLf
     s = s & "" & vbLf
     s = s & "# Example 6:" & vbLf
-    s = s & "<source>Based on CLIENT’s and sectoral KPIs we defined selection criteria and developed a scoring "
+    s = s & "<source>Based on CLIENTâ€™s and sectoral KPIs we defined selection criteria and developed a scoring "
     s = s & "model to select 5 target entities for the benchmarking exercise.</source>" & vbLf
     s = s & "<result>We developed a scoring model that factored in national, sectorial and organizational KPIs "
     s = s & "and aspirations to shortlist 5 entities for benchmarking.</result>" & vbLf
     s = s & "" & vbLf
     s = s & "# Example 7:" & vbLf
     s = s & "<source>Based on 6 selection criteria we defined 10 numeric parameters for our scoring model, which "
-    s = s & "rules are based on current and target CLIENT’s and sectoral KPIs.</source>" & vbLf
+    s = s & "rules are based on current and target CLIENTâ€™s and sectoral KPIs.</source>" & vbLf
     s = s & "<result>Our approach involved leveraging those KPIs as the foundation of our model, while implementing "
     s = s & "a scoring mechanism that encompasses additional factors.</result>" & vbLf
     s = s & "" & vbLf
@@ -284,15 +284,15 @@ Sub RephraseConsultingMultiShot()
     s = s & "" & vbLf
     s = s & "# Example 9:" & vbLf
     s = s & "<source>The benchmarking will focus on analysis of digitalization experience of port authorities and "
-    s = s & "port regulators in alignment with CLIENT’s operating model.</source>" & vbLf
-    s = s & "<result>To ensure our analysis is aligned with CLIENT’s current and future strategic plans, we will "
+    s = s & "port regulators in alignment with CLIENTâ€™s operating model.</source>" & vbLf
+    s = s & "<result>To ensure our analysis is aligned with CLIENTâ€™s current and future strategic plans, we will "
     s = s & "tailor our assessment to focus on key roles in the supply chain.</result>" & vbLf
     s = s & "" & vbLf
     s = s & "# Example 10:" & vbLf
     s = s & "<source>For a comprehensive benchmarking exercise, six dimensions were defined for the benchmarking "
-    s = s & "to address important questions of the CLIENT’s Digital Strategy.</source>" & vbLf
+    s = s & "to address important questions of the CLIENTâ€™s Digital Strategy.</source>" & vbLf
     s = s & "<result>To ensure our benchmarking exercise is consistent with the current state, we have defined "
-    s = s & "six critical dimensions that will significantly impact CLIENT’s digital future.</result>" & vbLf
+    s = s & "six critical dimensions that will significantly impact CLIENTâ€™s digital future.</result>" & vbLf
     s = s & "" & vbLf
     s = s & "###TASK###" & vbLf
     s = s & "<source>{{input}}</source>" & vbLf
