@@ -86,8 +86,8 @@ Private Function GetModelName(model As String, _
     ' https://console.anthropic.com/
     ' https://docs.anthropic.com/en/docs/models-overview
     ElseIf provider = "anthropic" Then
-        If model = "claude" Or model = "claude-3" Or model = "claude-3-opus" Then
-            GetModelName = "claude-3-opus-20240229"
+        If model = "claude" Or model = "claude-3" Then
+            GetModelName = "claude-3-5-sonnet-20240620"
         Else
             Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
