@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-06-12+1
+' Version 2024-08-28+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -95,7 +95,7 @@ Private Function GetModelName(model As String, _
     ' https://ai.google.dev/models/gemini
     ElseIf provider = "google" Then
         If model = "gemini" Or model = "gemini-pro" Or "gemini-pro-latest" Then
-            GetModelName = "gemini-1.5-pro"
+            GetModelName = "gemini-1.5-pro-latest"
         Else
             Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
