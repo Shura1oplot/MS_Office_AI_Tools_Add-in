@@ -110,6 +110,13 @@
                             supertip="Set up your API Keys for external service providers (OpenAI, Anthropic, Google)."
                             size="normal"
                             onAction="APIKeysButtonCallback" />
+                    <button id="ProxyButton"
+                            label="Proxy"
+                            imageMso="WebComponent"
+                            screentip="Open Proxy Settings window"
+                            supertip="Set up HTTP proxy server for external service providers (OpenAI, Anthropic, Google)."
+                            size="normal"
+                            onAction="ProxyButtonCallback" />
                     <button id="CustomTransformSettingsButton"
                             label="Custom Transform"
                             imageMso="MenuMacros"

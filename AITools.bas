@@ -1,5 +1,5 @@
 Attribute VB_Name = "AITools"
-' Version 2024-08-28+1
+' Version 2024-09-29+1
 
 ' References (all):
 ' - Microsoft Scripting Runtime
@@ -75,9 +75,11 @@ Private Function GetModelName(model As String, _
                               As String
     ' https://platform.openai.com/docs/models
     If provider = "openai" Then
-        If model = "gpt-4o" Then
+        If model = "chatgpt" Then
+            GetModelName = "chatgpt-4o-latest"
+        ElseIf model = "gpt-4o" Then
             GetModelName = "gpt-4o"
-        ElseIf model = "gpt-4" Or model = "gpt-4-turbo" Or model = "chatgpt" Then
+        ElseIf model = "gpt-4" Or model = "gpt-4-turbo" Then
             GetModelName = "gpt-4-turbo"
         Else
             Err.Raise vbObjectError + 1001, , "Invalid model"
@@ -86,7 +88,8 @@ Private Function GetModelName(model As String, _
     ' https://console.anthropic.com/
     ' https://docs.anthropic.com/en/docs/models-overview
     ElseIf provider = "anthropic" Then
-        If model = "claude" Or model = "claude-3" Then
+        If model = "claude" Or model = "claude-3" Or model = "claude-3.5" _
+                Or model = "claude-3.5-sonnet" Then
             GetModelName = "claude-3-5-sonnet-20240620"
         Else
             Err.Raise vbObjectError + 1001, , "Invalid model"
@@ -95,7 +98,7 @@ Private Function GetModelName(model As String, _
     ' https://ai.google.dev/models/gemini
     ElseIf provider = "google" Then
         If model = "gemini" Or model = "gemini-pro" Or "gemini-pro-latest" Then
-            GetModelName = "gemini-1.5-pro-latest"
+            GetModelName = "gemini-1.5-pro-002"
         Else
             Err.Raise vbObjectError + 1001, , "Invalid model"
         End If
@@ -104,6 +107,10 @@ Private Function GetModelName(model As String, _
         Err.Raise vbObjectError + 1001, , "Invalid provider"
 
     End If
+End Function
+
+Private Function GetProxy() As String
+    GetProxy = GetSetting("AI tools", "Settings", "Proxy", "")
 End Function
 
 ' OpenAI-like API
@@ -607,7 +614,7 @@ Begin:  ' ##################
 
     With AIToolsOutput
         .Tag = ""
-        .TextBoxOutput.Text = txt
+        .OutputTextBox.Text = txt
         .Show  ' Blocking
         result = ""
         On Error Resume Next
@@ -757,7 +764,7 @@ Function AI(mode As Integer, _
                  "</result>")
 
         s = s & vbLf & vbLf & vbLf
-
+        
         s = s & "###TASK###" & vbLf & vbLf
 
         s = s & RangeToText(input_data)
@@ -924,6 +931,15 @@ Sub OpenAPIKeysSettings()
 End Sub
 
 
+Sub OpenProxySettings()
+    With AIToolsProxy
+        .ProxyTextBox.Text = _
+            GetSetting("AI tools", "Settings", "Proxy", "")
+        .Show
+    End With
+End Sub
+
+
 Sub OpenCustomTransformSettings()
     With AIToolsCustomTransformSettings
         .PromptTextBox.Text = _
@@ -1030,6 +1046,10 @@ End Sub
 
 Sub APIKeysButtonCallback(control As IRibbonControl)
     OpenAPIKeysSettings
+End Sub
+
+Sub ProxyButtonCallback(control As IRibbonControl)
+    OpenProxySettings
 End Sub
 
 Sub CustomTransformSettingsButtonCallback(control As IRibbonControl)
@@ -1595,6 +1615,13 @@ Private Function LLMChatOpenAI(provider As String, _
     timeout = 60000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
 
+    Dim proxy As String
+    proxy = GetProxy()
+
+    If proxy <> "" Then
+        http.SetProxy 2, "http://" & proxy
+    End If
+
     http.Open "POST", base_url
     http.SetRequestHeader "Content-Type", "application/json"
     http.SetRequestHeader "Authorization", "Bearer " & GetAPIKey(provider)
@@ -1704,6 +1731,13 @@ Private Function LLMChatAnthropic(model As String, _
     Dim timeout As Long
     timeout = 60000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
+
+    Dim proxy As String
+    proxy = GetProxy()
+
+    If proxy <> "" Then
+        http.SetProxy 2, "http://" & proxy
+    End If
 
     http.Open "POST", base_url
     http.SetRequestHeader "Content-Type", "application/json"
@@ -1882,6 +1916,13 @@ Private Function LLMChatGoogleAI(model As String, _
     Dim timeout As Long
     timeout = 60000  ' ms
     http.SetTimeouts timeout, timeout, timeout, timeout
+
+    Dim proxy As String
+    proxy = GetProxy()
+
+    If proxy <> "" Then
+        http.SetProxy 2, "http://" & proxy
+    End If
 
     http.Open "POST", url & "?key=" & GetAPIKey("google")
     http.SetRequestHeader "Content-Type", "application/json"
